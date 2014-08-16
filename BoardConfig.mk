@@ -49,6 +49,7 @@ BOARD_HAVE_BLUETOOTH_QCOM := true
 
 # GPS
 TARGET_NO_RPC := true
+TARGET_PROVIDES_GPS_LOC_API := true
 
 # Init
 TARGET_INIT_VENDOR_LIB := libinit_msm
