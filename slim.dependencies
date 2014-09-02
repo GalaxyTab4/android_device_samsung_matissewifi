@@ -31,7 +31,7 @@
   },
   {
     "repository": "SlimRoms/hardware_qcom_audio-caf",
-    "target_path": "hardware/qcom/audo-caf",
+    "target_path": "hardware/qcom/audio-caf",
     "branch": "kk4.4"
   },
   {
