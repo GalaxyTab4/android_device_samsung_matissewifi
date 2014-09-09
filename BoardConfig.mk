@@ -33,6 +33,9 @@ TARGET_KERNEL_CONFIG := slim_mondrian_defconfig
 TARGET_KERNEL_SOURCE := kernel/samsung/mondrianwifi
 TARGET_KERNEL_CUSTOM_TOOLCHAIN := linaro-4.7-13.04/bin/arm-linux-gnueabihf-
 
+# External apps on SD
+TARGET_EXTERNAL_APPS = sdcard1
+
 # Audio
 BOARD_HAVE_NEW_QCOM_CSDCLIENT := true
 BOARD_HAVE_SAMSUNG_AUDIO := true
