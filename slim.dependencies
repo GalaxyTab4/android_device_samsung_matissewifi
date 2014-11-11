@@ -1,42 +1,42 @@
 [
   {
-    "repository": "SlimRoms/device_samsung_qcom-common",
-    "target_path": "device/samsung/qcom-common",
-    "branch": "kk4.4"
-  },
-  {
     "repository": "SlimRoms/device_samsung_msm8974-common",
     "target_path": "device/samsung/msm8974-common",
-    "branch": "kk4.4"
+    "branch": "lp5.0"
   },
   {
-    "repository": "SlimRoms/kernel_samsung_mondrianwifi",
-    "target_path": "kernel/samsung/mondrianwifi",
-    "branch": "kk4.4"
+    "repository": "SlimRoms/device_samsung_qcom-common",
+    "target_path": "device/samsung/qcom-common",
+    "branch": "lp5.0"
   },
   {
     "repository": "SlimRoms/device_qcom_common",
     "target_path": "device/qcom/common",
-    "branch": "kk4.4"
+    "branch": "lp5.0"
   },
   {
-    "repository": "SlimRoms/hardware_qcom_display-caf-new",
-    "target_path": "hardware/qcom/display-caf-new",
-    "branch": "kk4.4"
+    "repository": "SlimRoms/kernel_samsung_mondrianwifi",
+    "target_path": "kernel/samsung/mondrianwifi",
+    "branch": "lp5.0"
+  },
+  {
+    "repository": "SlimRoms/hardware_qcom_display-caf",
+    "target_path": ""hardware/qcom/display-caf/msm8974",
+    "branch": "lp5.0-caf-8974"
   },
   {
     "repository": "SlimRoms/hardware_qcom_media-caf-new",
-    "target_path": "hardware/qcom/media-caf-new",
-    "branch": "kk4.4"
+    "target_path": "hardware/qcom/media-caf/msm8974",
+    "branch": "lp5.0-caf-8974"
   },
   {
     "repository": "SlimRoms/hardware_qcom_audio-caf",
-    "target_path": "hardware/qcom/audio-caf",
-    "branch": "kk4.4"
+    "target_path": "hardware/qcom/audio-caf/default",
+    "branch": "lp5.0-caf-8974"
   },
   {
     "repository": "SlimRoms/hardware_samsung",
     "target_path": "hardware/samsung",
-    "branch": "kk4.4"
+    "branch": "lp5.0"
   }
 ]
