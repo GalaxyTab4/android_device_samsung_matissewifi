@@ -21,7 +21,7 @@
   },
   {
     "repository": "SlimRoms/hardware_qcom_display-caf",
-    "target_path": ""hardware/qcom/display-caf/msm8974",
+    "target_path": "hardware/qcom/display-caf/msm8974",
     "branch": "lp5.0-caf-8974"
   },
   {
