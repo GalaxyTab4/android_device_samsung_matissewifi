@@ -25,7 +25,7 @@
     "branch": "lp5.0-caf-8974"
   },
   {
-    "repository": "SlimRoms/hardware_qcom_media-caf-new",
+    "repository": "SlimRoms/hardware_qcom_media-caf",
     "target_path": "hardware/qcom/media-caf/msm8974",
     "branch": "lp5.0-caf-8974"
   },
