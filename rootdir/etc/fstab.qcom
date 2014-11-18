@@ -16,5 +16,5 @@
 /dev/block/zram0                                      none             swap    defaults  zramsize=268435456
 
 # VOLD
-/devices/msm_sdcc.2/mmc_host/mmc1			auto		auto	defaults	voldmanaged=sdcard1:auto
-/devices/platform/xhci-hcd				auto		auto	defaults	voldmanaged=usbdisk:auto
+/devices/msm_sdcc.2/mmc_host/mmc1*			auto		auto	defaults	voldmanaged=sdcard1:auto
+/devices/platform/xhci-hcd*				auto		auto	defaults	voldmanaged=usbdisk:auto
