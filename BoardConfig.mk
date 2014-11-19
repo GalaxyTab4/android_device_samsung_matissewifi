@@ -57,6 +57,7 @@ USE_DEVICE_SPECIFIC_CAMERA := true
 
 # GPS
 TARGET_NO_RPC := true
+TARGET_GPS_HAL_PATH := device/samsung/mondrianwifi/gps
 TARGET_PROVIDES_GPS_LOC_API := true
 
 # Init
