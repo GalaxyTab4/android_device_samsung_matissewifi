@@ -65,6 +65,9 @@ TARGET_NO_RPC := true
 TARGET_GPS_HAL_PATH := device/samsung/mondrianwifi/gps
 TARGET_PROVIDES_GPS_LOC_API := true
 
+# Hardware
+BOARD_HARDWARE_CLASS += device/samsung/mondrianwifi/cmhw
+
 # Init
 TARGET_INIT_VENDOR_LIB := libinit_msm
 TARGET_LIBINIT_DEFINES_FILE := device/samsung/mondrianwifi/init/init_mondrianwifi.c
