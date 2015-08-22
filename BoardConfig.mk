@@ -32,7 +32,7 @@ BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02900000 --tags_offset 0x02700000
 TARGET_KERNEL_CONFIG := slim_mondrian_defconfig
 TARGET_KERNEL_SOURCE := kernel/samsung/mondrianwifi
 KERNEL_TOOLCHAIN_PREFIX := arm-linux-gnueabihf-
-KERNEL_TOOLCHAIN := "$(ANDROID_BUILD_TOP)/prebuilt/$(HOST_OS)-x86/toolchain/linaro-4.9-14.06/bin/"
+KERNEL_TOOLCHAIN := "$(ANDROID_BUILD_TOP)/prebuilt/$(HOST_OS)-x86/toolchain/linaro-4.9-15.05/bin/"
 
 # External apps on SD
 TARGET_EXTERNAL_APPS = sdcard1
@@ -46,6 +46,9 @@ BOARD_USES_SEPERATED_AUDIO_INPUT := true
 AUDIO_FEATURE_DISABLED_MULTI_VOICE_SESSIONS := true
 AUDIO_FEATURE_DISABLED_FM := true
 AUDIO_FEATURE_DISABLED_ANC_HEADSET := true
+
+# Use 44.1 khz sounds
+TARGET_NEED_44KHZ_SOUNDS=true
 
 # Bluetooth
 BLUETOOTH_HCI_USE_MCT := true
