@@ -76,6 +76,10 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/sec_touchscreen.kl:system/usr/keylayout/sec_touchscreen.kl \
     $(LOCAL_PATH)/keylayout/ue_rf4ce_remote.kl:system/usr/keylayout/ue_rf4ce_remote.kl
 
+# Charger
+PRODUCT_PACKAGES += \
+    charger
+
 # Keystore
 PRODUCT_PACKAGES += \
     keystore.msm8974
@@ -87,6 +91,10 @@ PRODUCT_PACKAGES += \
 # Media
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/configs/media_profiles.xml:system/etc/media_profiles.xml
+
+# Add kernel config
+PRODUCT_COPY_FILES += \
+    device/samsung/mondrianwifi/rootdir/etc/init.slim.kernel.sh:system/bin/init.slim.kernel.sh
 
 PRODUCT_PROPERTY_OVERRIDES += \
     av.offload.enable=false
