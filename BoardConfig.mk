@@ -69,11 +69,6 @@ TARGET_PROVIDES_GPS_LOC_API := true
 # Hardware
 BOARD_HARDWARE_CLASS += device/samsung/mondrianwifi/cmhw
 
-# Init
-TARGET_INIT_VENDOR_LIB := libinit_msm
-TARGET_LIBINIT_DEFINES_FILE := device/samsung/mondrianwifi/init/init_mondrianwifi.c
-TARGET_UNIFIED_DEVICE := true
-
 # Graphics
 TARGET_HAVE_NEW_GRALLOC := true
 BOARD_USES_LEGACY_MMAP := true
