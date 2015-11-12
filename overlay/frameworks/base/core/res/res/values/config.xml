@@ -263,10 +263,6 @@
          2 - The device DOES NOT have a permanent menu key; ignore autodetection. -->
     <integer name="config_overrideHasPermanentMenuKey">2</integer>
 
-    <!-- Performance profiles -->
-    <string name="config_perf_profile_prop">powerhal</string>
-    <string name="config_perf_profile_default_entry">1</string>
-
     <!-- Screen brightness used to dim the screen while dozing in a very low power state.
           May be less than the minimum allowed brightness setting
           that can be set by the user. -->
