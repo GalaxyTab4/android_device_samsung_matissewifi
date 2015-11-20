@@ -38,8 +38,8 @@ on init
     # BoringSSL Hack
     export LD_PRELOAD "/system/lib/libboringssl-compat.so"
 
-    # Shim libqc-opt
-    export LD_SHIM_LIBS "/system/vendor/lib/libqc-opt.so|libshim_qcopt.so"
+    # Shim libqc-opt & rmt_storage
+    export LD_SHIM_LIBS "/system/vendor/lib/libqc-opt.so|libshim_qcopt.so:/system/bin/rmt_storage|libshim_rmt_storage.so"
 
     # Set permissions for persist partition
     mkdir /persist 0771 system system
