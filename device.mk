@@ -115,6 +115,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libmoto
 
+# Motorola Camera permissions
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/configs/com.motorola.camera.xml:system/etc/permissions/com.motorola.camera.xml \
+    $(LOCAL_PATH)/configs/com.motorola.motosignature.xml:system/etc/permissions/com.motorola.motosignature.xml
+
 # OMX
 PRODUCT_PACKAGES += \
     libdashplayer \
@@ -194,6 +199,8 @@ PRODUCT_PACKAGES += \
 # Doze
 PRODUCT_PACKAGES += \
     MotoDoze
+
+PRODUCT_GMS_CLIENTID_BASE := android-motorola
 
 # Prima(pronto firmware)
 PRODUCT_COPY_FILES += \
