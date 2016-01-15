@@ -28,6 +28,8 @@ TARGET_BOARD_PLATFORM := msm8610
 
 USE_CLANG_PLATFORM_BUILD := true
 
+TARGET_SPECIFIC_HEADER_PATH := $(LOCAL_PATH)/include
+
 # Architecture
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
