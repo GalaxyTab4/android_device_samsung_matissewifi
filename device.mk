@@ -36,9 +36,6 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     libstlport
 
-DEVICE_PACKAGE_OVERLAYS := \
-    $(LOCAL_PATH)/overlay
-
 # Prima(pronto firmware)
 PRODUCT_COPY_FILES += \
     kernel/motorola/msm8610/drivers/staging/prima/firmware_bin/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
