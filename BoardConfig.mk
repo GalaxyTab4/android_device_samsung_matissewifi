@@ -16,9 +16,6 @@
 
 -include vendor/motorola/condor/BoardConfigVendor.mk
 
-# inherit from common msm8610-common
--include device/motorola/msm8610-common/BoardConfigCommon.mk
-
 LOCAL_PATH := device/motorola/condor
 
 # Kernel
