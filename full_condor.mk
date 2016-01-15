@@ -28,3 +28,5 @@ PRODUCT_DEVICE := condor
 PRODUCT_BRAND := motorola
 PRODUCT_MODEL := condor
 PRODUCT_MANUFACTURER := motorola
+
+$(call inherit-product-if-exists, vendor/motorola/condor/condor-vendor.mk)

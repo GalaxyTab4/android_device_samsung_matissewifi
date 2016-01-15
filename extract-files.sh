@@ -53,6 +53,7 @@ function extract() {
 DEVBASE=../../../vendor/$VENDOR/$DEVICE/proprietary
 rm -rf $DEVBASE/*
 
+extract proprietary-files-qc.txt $DEVBASE
 extract proprietary-files.txt $DEVBASE
 
 ../../../device/$VENDOR/$DEVICE/setup-makefiles.sh
