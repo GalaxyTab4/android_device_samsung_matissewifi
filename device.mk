@@ -97,8 +97,9 @@ PRODUCT_PACKAGES += \
 # Camera
 PRODUCT_PACKAGES += \
     libboringssl-compat \
-    libshim_qcopt
-
+    libshim_qcopt \
+    Snap
+	
 # Filesystem
 PRODUCT_PACKAGES += \
     setup_fs
