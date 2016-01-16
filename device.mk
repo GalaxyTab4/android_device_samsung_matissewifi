@@ -23,6 +23,10 @@ LOCAL_PATH := device/motorola/condor
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
+# Blobs
+$(call inherit-product, vendor/motorola/condor/condor-vendor.mk)
+$(call inherit-product, vendor/motorola/msm8610-common/msm8610-common-vendor.mk)
+
 # Ramdisk
  PRODUCT_COPY_FILES += \
      $(call find-copy-subdir-files,*,${LOCAL_PATH}/ramdisk,root)
