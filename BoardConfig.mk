@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
--include vendor/motorola/condor/BoardConfigVendor.mk
-
 LOCAL_PATH := device/motorola/condor
 
 BOARD_VENDOR := motorola-qcom
@@ -27,8 +25,6 @@ TARGET_BOARD_PLATFORM_GPU := qcom-adreno302
 TARGET_BOARD_PLATFORM := msm8610
 
 USE_CLANG_PLATFORM_BUILD := true
-
-TARGET_SPECIFIC_HEADER_PATH := $(LOCAL_PATH)/include
 
 # Architecture
 TARGET_CPU_ABI := armeabi-v7a
