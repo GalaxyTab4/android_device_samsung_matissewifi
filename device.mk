@@ -163,6 +163,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     gps.msm8610
 
+# libcondor
+PRODUCT_PACKAGES += \
+    libcondor
+
 # Stlport
 PRODUCT_PACKAGES += \
     libstlport

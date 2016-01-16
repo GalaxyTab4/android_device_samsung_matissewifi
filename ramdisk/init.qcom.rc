@@ -59,9 +59,10 @@ on init
     chown root qcom_diag /sys/kernel/dropbox/event
     chown root qcom_diag /sys/kernel/dropbox/data
 
-    # Symbols required for motorola blobs
-    export LD_PRELOAD "/system/lib/libmoto.so /system/lib/libboringssl-compat.so"
-    export LD_SHIM_LIBS "/system/vendor/lib/libqc-opt.so|libshim_qcopt.so"
+on init
+# Symbols required for Motorola blobs
+    export LD_PRELOAD  "/system/lib/libcondor.so"
+
 
 on fs
 
