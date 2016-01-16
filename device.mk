@@ -201,10 +201,6 @@ PRODUCT_PACKAGES += \
     libQWiFiSoftApCfg \
     libqsap_sdk
 
-# Doze
-PRODUCT_PACKAGES += \
-    MotoDoze
-
 PRODUCT_GMS_CLIENTID_BASE := android-motorola
 
 # Prima(pronto firmware)
