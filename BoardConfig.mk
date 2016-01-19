@@ -29,13 +29,16 @@ BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(DEVICE_PATH)/bluetooth
 # Init
 TARGET_LIBINIT_DEFINES_FILE := $(DEVICE_PATH)/init/init_matisse.cpp
 TARGET_UNIFIED_DEVICE := true
+TARGET_INIT_VENDOR_LIB := libinit_msm
 
 # Kernel
+#TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-eabi-
 #TARGET_KERNEL_ARCH := arm
-#KERNEL_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilts/gcc/$(HOST_OS)-x86/arch/arm-linux-androideabi-4.9/bin
-#KERNEL_TOOLCHAIN_PREFIX := arm-linux-androideabi-
-TARGET_KERNEL_SOURCE := kernel/samsung/s3ve3g
-TARGET_KERNEL_CONFIG := twrp_matissewifi_defconfig
+#KERNEL_TOOLCHAIN := /roms/bosp6/prebuilts/gcc/linux-x86/arch/arm-eabi-4.8/bin
+#KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
+TARGET_KERNEL_SOURCE := kernel/samsung/matissewifi
+TARGET_KERNEL_CONFIG := cyanogenmod_matissewifi_defconfig
+#TARGET_KERNEL_SELINUX_CONFIG := selinux_defconfig
 #TARGET_KERNEL_CONFIG := cyanogenmod_matissewifi3g_defconfig
 #TARGET_KERNEL_CONFIG := cyanogenmod_matissewifilte_defconfig
 BOARD_KERNEL_CMDLINE := console=null androidboot.console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 androidboot.bootdevice=msm_sdcc.1
@@ -110,8 +113,8 @@ BLISS_GRAPHITE := true
 BLISS_STRICT := true
 BLISS_KRAIT := true
 BLISS_PIPE := true
-TARGET_TC_ROM := 4.9
-TARGET_TC_KERNEL := 4.9
+TARGET_TC_ROM := 4.9-sm
+TARGET_TC_KERNEL := 4.9.sm
 TARGET_GCC_VERSION_EXP := $(TARGET_TC_ROM)
 TARGET_KERNEL_CUSTOM_TOOLCHAIN := $(TARGET_TC_KERNEL)
 WITH_LZMA_OTA := false
