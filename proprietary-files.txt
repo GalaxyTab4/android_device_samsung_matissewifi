@@ -228,7 +228,6 @@ vendor/lib/libqti-perfd-client.so
 
 # Qualcomm framework
 vendor/lib/libdiag.so
-lib/libnetutils.so
 ##vendor/lib/libdsucsd.so
 vendor/lib/libdsutils.so
 vendor/lib/libidl.so
