@@ -32,11 +32,9 @@ TARGET_UNIFIED_DEVICE := true
 TARGET_INIT_VENDOR_LIB := libinit_msm
 
 # Kernel
-#TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-eabi-
 #TARGET_KERNEL_ARCH := arm
-#KERNEL_TOOLCHAIN := /roms/bosp6/prebuilts/gcc/linux-x86/arch/arm-eabi-4.8/bin
-#KERNEL_TOOLCHAIN_PREFIX := arm-eabi-
-TARGET_KERNEL_SOURCE := kernel/samsung/matissewifi
+TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
+TARGET_KERNEL_SOURCE := kernel/samsung/s3ve3g
 TARGET_KERNEL_CONFIG := cyanogenmod_matissewifi_defconfig
 #TARGET_KERNEL_SELINUX_CONFIG := selinux_defconfig
 #TARGET_KERNEL_CONFIG := cyanogenmod_matissewifi3g_defconfig
