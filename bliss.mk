@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Inherit some common CM stuff.
-$(call inherit-product, vendor/bliss/config/common_full_phone.mk)
+# Inherit some common BOSP stuff.
+$(call inherit-product, vendor/bliss/config/common_full_tablet_wifionly.mk)
 
 # Inherit device configuration
 $(call inherit-product, device/samsung/matissewifi/full_matissewifi.mk)
