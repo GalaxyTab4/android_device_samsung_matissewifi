@@ -34,7 +34,7 @@ TARGET_INIT_VENDOR_LIB := libinit_msm
 # Kernel
 TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
 TARGET_KERNEL_SOURCE := kernel/samsung/matissewifi
-TARGET_KERNEL_CONFIG := cyanogenmod_matissewifi_defconfig
+TARGET_KERNEL_CONFIG := twrp_matissewifi_defconfig
 BOARD_KERNEL_CMDLINE := console=null androidboot.console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 androidboot.selinux=permissive
 BOARD_KERNEL_SEPARATED_DT := true
 BOARD_KERNEL_BASE := 0x00000000
@@ -63,7 +63,7 @@ TARGET_RELEASETOOLS_EXTENSIONS := $(DEVICE_PATH)
 TARGET_SYSTEM_PROP += $(DEVICE_PATH)/system.prop
 
 # Recovery
-TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/rootdir/fstab.qcom
+TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/rootdir/twrp.fstab
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
 TARGET_RECOVERY_QCOM_RTC_FIX := true
 TARGET_RECOVERY_DEVICE_DIRS += $(DEVICE_PATH)
@@ -78,6 +78,7 @@ RECOVERY_SDCARD_ON_DATA := true
 COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
 
 # TWRP-Specific
+TARGET_PREBUILT_KERNEL := device/samsung/matissewifi/prebuilt/kernel
 RECOVERY_VARIANT := twrp
 TW_THEME := landscape_mdpi
 TW_HAS_DOWNLOAD_MODE := true
@@ -89,8 +90,8 @@ TW_EXTERNAL_STORAGE_MOUNT_POINT := "external_sd"
 TW_DEFAULT_EXTERNAL_STORAGE := true
 TW_NO_REBOOT_BOOTLOADER := true
 TW_IGNORE_MAJOR_AXIS_0 := true
-TW_INCLUDE_CRYPTO := true
-TW_INCLUDE_L_CRYPTO := true
+#TW_INCLUDE_CRYPTO := true
+#TW_INCLUDE_L_CRYPTO := true
 #TW_TARGET_USES_QCOM_BSP := true
 HAVE_SELINUX := true
 
@@ -107,7 +108,7 @@ BLISS_GRAPHITE := true
 BLISS_STRICT := true
 BLISS_KRAIT := true
 BLISS_PIPE := true
-TARGET_TC_ROM := 4.9-sm
+TARGET_TC_ROM := 6.0-sm
 TARGET_TC_KERNEL := 4.9.sm
 TARGET_GCC_VERSION_EXP := $(TARGET_TC_ROM)
 TARGET_KERNEL_CUSTOM_TOOLCHAIN := $(TARGET_TC_KERNEL)

@@ -20,6 +20,9 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 # Proprietary files
 $(call inherit-product, vendor/samsung/matissewifi/matissewifi-vendor.mk)
 
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/prebuilt/ext:recovery/root/sbin/ext
+
 # Audio configuration
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/audio/audio_platform_info.xml:system/etc/audio_platform_info.xml \

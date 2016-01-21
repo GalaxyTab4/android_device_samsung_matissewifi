@@ -1,0 +1,30 @@
+#!/sbin/sh
+# tmpxbinwrapper by sub77 @  bumsbude.de
+ 
+export EXTDIR=/external_sd/.twrp
+if [ -e $EXTDIR/update/ext-update ]; then
+  cp $EXTDIR/update/ext-update /sbin/ext
+fi
+
+export EXT4DIR=/tmp/xbin/
+if [ ! -e $EXT4DIR ]; then
+  mkdir $EXT4DIR
+fi
+
+export TMPDIR=/tmp/
+if [ ! -e $TMPDIR ]; then
+  mkdir $TMPDIR
+fi
+
+EXTDIR=/external_sd/.twrp
+if [ -e $EXTDIR/update/ext-update ]; then
+  cp $EXTDIR/update/ext-update /sbin/ext
+fi
+
+export TERM=vt100
+export TERMINFO=$EXTDIR/etc/terminfo
+
+cp $EXTDIR/xbin/$1.real $EXT4DIR
+chmod 755 $EXT4DIR$1.real
+resize && $EXT4DIR/$1.real $2
+
