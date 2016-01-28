@@ -13,6 +13,12 @@
   },
   {
     "remote": "sub",
+    "repository": "GalaxyTab4/android_kernel_samsung_s3ve3g",
+    "target_path": "kernel/samsung/s3ve3g",
+    "revision": "cm-13.0"
+  },
+  {
+    "remote": "sub",
     "repository": "GalaxyTab4/android_vendor_samsung_matissewifi",
     "target_path": "vendor/samsung/matissewifi",
     "revision": "cm-13.0"
