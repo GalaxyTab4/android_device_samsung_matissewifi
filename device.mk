@@ -27,6 +27,8 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 $(call inherit-product-if-exists, vendor/samsung/matissewifi/matissewifi-vendor.mk)
 $(call inherit-product-if-exists, vendor/samsung/msm8226-common/msm8226-common-vendor.mk)
 
+PRODUCT_CHARACTERISTICS := tablet
+
 # Ramdisk
  PRODUCT_COPY_FILES += \
      $(call find-copy-subdir-files,*,${LOCAL_PATH}/ramdisk,root)
@@ -37,7 +39,7 @@ PRODUCT_COPY_FILES += \
 
 # These are the hardware-specific features
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/handheld_core_hardware.xml:system/etc/permissions/handheld_core_hardware.xml \
+    frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
     frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml \
     frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:system/etc/permissions/android.hardware.camera.flash-autofocus.xml \
     frameworks/native/data/etc/android.hardware.location.gps.xml:system/etc/permissions/android.hardware.location.gps.xml \
@@ -60,14 +62,14 @@ PRODUCT_COPY_FILES += \
 
 PRODUCT_TAGS += dalvik.gc.type-precise
 
-PRODUCT_AAPT_PREF_CONFIG := hdpi
+PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 DEVICE_PACKAGE_OVERLAYS := \
     $(LOCAL_PATH)/overlay
 
 # Boot animation
-TARGET_SCREEN_HEIGHT := 960
-TARGET_SCREEN_WIDTH := 540
+TARGET_SCREEN_HEIGHT := 800
+TARGET_SCREEN_WIDTH := 1280
 
 PRODUCT_PACKAGES += \
     gralloc.msm8226 \
@@ -99,7 +101,7 @@ PRODUCT_PACKAGES += \
     libboringssl-compat \
     libshim_qcopt \
     Snap
-	
+
 # Filesystem
 PRODUCT_PACKAGES += \
     setup_fs
@@ -107,10 +109,6 @@ PRODUCT_PACKAGES += \
 # Qcom SoftAP & wifi
 PRODUCT_PACKAGES += \
     libQWiFiSoftApCfg
-
-# samsung
-PRODUCT_PACKAGES += \
-    charge_only_mode
 
 # Misc
 PRODUCT_PACKAGES += \
@@ -141,11 +139,6 @@ PRODUCT_BOOT_JARS += \
     qcmediaplayer
 
 PRODUCT_PACKAGES += \
-    wlan_module_symlink \
-    wlan_persist_symlink \
-    wcnss_service
-
-PRODUCT_PACKAGES += \
     librs_jni \
     com.android.future.usb.accessory
 
@@ -167,10 +160,6 @@ PRODUCT_PACKAGES += \
 # GPS
 PRODUCT_PACKAGES += \
     gps.msm8226
-
-# libmatissewifi
-PRODUCT_PACKAGES += \
-    libmatissewifi
 
 # Stlport
 PRODUCT_PACKAGES += \
@@ -195,7 +184,6 @@ PRODUCT_PACKAGES += \
     p2p_supplicant_overlay.conf \
     dhcpcd.conf \
     wpa_supplicant.conf \
-    wlan_module_symlink \
     wlan_persist_symlink \
     wcnss_service \
     libQWiFiSoftApCfg \
@@ -211,4 +199,4 @@ PRODUCT_COPY_FILES += \
 # Inhert dalvik heap values from aosp
 $(call inherit-product, frameworks/native/build/phone-xhdpi-1024-dalvik-heap.mk)
 
-$(call inherit-product-if-exists, hardware/qcom/msm8x74/msm8x74.mk)
+$(call inherit-product-if-exists, hardware/qcom/msm8x26/msm8x26.mk)
