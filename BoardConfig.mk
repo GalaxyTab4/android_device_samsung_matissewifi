@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 
-LOCAL_PATH := device/motorola/condor
+LOCAL_PATH := device/samsung/matissewifi
 
-BOARD_VENDOR := motorola-qcom
+BOARD_VENDOR := samsung
 
 TARGET_SPECIFIC_HEADER_PATH := $(LOCAL_PATH)/include
 
 # Platform
-TARGET_BOARD_PLATFORM_GPU := qcom-adreno302
-TARGET_BOARD_PLATFORM := msm8610
+TARGET_BOARD_PLATFORM_GPU := qcom-adreno305
+TARGET_BOARD_PLATFORM := msm8226
 
 USE_CLANG_PLATFORM_BUILD := false
 
@@ -35,11 +35,11 @@ TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_VARIANT := krait
 
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := MSM8610
+TARGET_BOOTLOADER_BOARD_NAME := MSM8226
 TARGET_NO_BOOTLOADER := true
 
 # Charger
-BOARD_CHARGING_MODE_BOOTING_LPM := /sys/mmi_lpm/lpm_mode
+BOARD_CHARGING_MODE_BOOTING_LPM := /sys/class/power_supply/battery/batt_lp_charging
 
 # Kernel
 BOARD_DTBTOOL_ARGS := -v2
@@ -47,18 +47,11 @@ BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_SEPARATED_DT := true
 BOARD_CUSTOM_BOOTIMG_MK := $(LOCAL_PATH)/mkbootimg.mk
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100
-TARGET_KERNEL_CONFIG := cm_condor_defconfig
-TARGET_KERNEL_SOURCE := kernel/motorola/msm8610
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000 --tags_offset 0x01E00000
+TARGET_KERNEL_CONFIG := cyanogenmod_matissewifi_defconfig
+TARGET_KERNEL_SOURCE := kernel/samsung/s3ve3g
 
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom androidboot.bootdevice=msm_sdcc.1 user_debug=31 msm_rtb.filter=0x37 utags.blkdev=/dev/block/bootdevice/by-name/utags vmalloc=400M
-
-WLAN_MODULES:
-	mkdir -p $(KERNEL_MODULES_OUT)/pronto
-	mv $(KERNEL_MODULES_OUT)/wlan.ko $(KERNEL_MODULES_OUT)/pronto/pronto_wlan.ko
-	ln -sf /system/lib/modules/pronto/pronto_wlan.ko $(TARGET_OUT)/lib/modules/wlan.ko
-
-TARGET_KERNEL_MODULES += WLAN_MODULES
+BOARD_KERNEL_CMDLINE := console=null androidboot.console=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37 androidboot.selinux=permissive
 
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
@@ -67,7 +60,7 @@ TARGET_PROVIDES_LIBLIGHT := true
 TARGET_NO_RPC := true
 
 # Global flags
-COMMON_GLOBAL_CFLAGS += -DMOTOROLA_UIDS -DQCOM_HARDWARE -DCAMERA_VENDOR_L_COMPAT
+COMMON_GLOBAL_CFLAGS += -DQCOM_HARDWARE -DCAMERA_VENDOR_L_COMPAT
 TARGET_NR_SVC_SUPP_GIDS := 32
 
 # Display
@@ -87,8 +80,6 @@ BOARD_HOSTAPD_DRIVER := NL80211
 BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_qcwcn
 BOARD_WPA_SUPPLICANT_DRIVER := NL80211
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_qcwcn
-WIFI_DRIVER_MODULE_PATH := "/system/lib/modules/wlan.ko"
-WIFI_DRIVER_MODULE_NAME := "wlan"
 WPA_SUPPLICANT_VERSION := VER_0_8_X
 
 # Audio
@@ -136,11 +127,11 @@ BOARD_VOLD_MAX_PARTITIONS := 40
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/file
 
 # Asserts
-TARGET_OTA_ASSERT_DEVICE := xt1021,xt1022,xt1023,condor_umts,condor_umtsds,condor
+TARGET_OTA_ASSERT_DEVICE := matissewifi,matissewifiue
 
 # Init
 TARGET_INIT_VENDOR_LIB := libinit_msm
-TARGET_LIBINIT_DEFINES_FILE := $(LOCAL_PATH)/init/init_condor.cpp
+TARGET_LIBINIT_DEFINES_FILE := $(LOCAL_PATH)/init/init_matissewifi.cpp
 TARGET_UNIFIED_DEVICE := true
 
 # Recovery
@@ -152,7 +143,7 @@ HAVE_SELINUX := true
 include device/qcom/sepolicy/sepolicy.mk
 
 BOARD_SEPOLICY_DIRS += \
-    device/motorola/condor/sepolicy
+    device/samsung/matissewifi/sepolicy
 
 MALLOC_IMPL := dlmalloc
 

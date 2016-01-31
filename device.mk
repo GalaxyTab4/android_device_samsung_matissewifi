@@ -14,18 +14,18 @@
 # limitations under the License.
 #
 
-# This file includes all definitions that apply to ALL condor devices, and
-# are also specific to condor devices
+# This file includes all definitions that apply to ALL matissewifi devices, and
+# are also specific to matissewifi devices
 #
 # Everything in this directory will become public
 
-LOCAL_PATH := device/motorola/condor
+LOCAL_PATH := device/samsung/matissewifi
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
 # Blobs
-$(call inherit-product, vendor/motorola/condor/condor-vendor.mk)
-$(call inherit-product, vendor/motorola/msm8610-common/msm8610-common-vendor.mk)
+$(call inherit-product-if-exists, vendor/samsung/matissewifi/matissewifi-vendor.mk)
+$(call inherit-product-if-exists, vendor/samsung/msm8226-common/msm8226-common-vendor.mk)
 
 # Ramdisk
  PRODUCT_COPY_FILES += \
@@ -70,22 +70,22 @@ TARGET_SCREEN_HEIGHT := 960
 TARGET_SCREEN_WIDTH := 540
 
 PRODUCT_PACKAGES += \
-    gralloc.msm8610 \
-    copybit.msm8610 \
-    hwcomposer.msm8610 \
-    memtrack.msm8610 \
-    power.condor
+    gralloc.msm8226 \
+    copybit.msm8226 \
+    hwcomposer.msm8226 \
+    memtrack.msm8226 \
+    power.matissewifi
 
 PRODUCT_PACKAGES += \
-    audio.msm8610 \
-    audio_policy.msm8610
+    audio.msm8226 \
+    audio_policy.msm8226
 
 # Keystore
-PRODUCT_PACKAGES += keystore.msm8610
+PRODUCT_PACKAGES += keystore.msm8226
 
 PRODUCT_PACKAGES += \
     audiod \
-    audio.primary.msm8610 \
+    audio.primary.msm8226 \
     audio.a2dp.default \
     audio.usb.default \
     audio.r_submix.default \
@@ -108,7 +108,7 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libQWiFiSoftApCfg
 
-# Motorola
+# samsung
 PRODUCT_PACKAGES += \
     charge_only_mode
 
@@ -116,10 +116,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libxml2
 
-# Motorola Camera permissions
+# samsung Camera permissions
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/com.motorola.camera.xml:system/etc/permissions/com.motorola.camera.xml \
-    $(LOCAL_PATH)/configs/com.motorola.motosignature.xml:system/etc/permissions/com.motorola.motosignature.xml
+    $(LOCAL_PATH)/configs/com.samsung.camera.xml:system/etc/permissions/com.samsung.camera.xml \
+    $(LOCAL_PATH)/configs/com.samsung.motosignature.xml:system/etc/permissions/com.samsung.motosignature.xml
 
 # OMX
 PRODUCT_PACKAGES += \
@@ -162,15 +162,15 @@ PRODUCT_PACKAGES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-    lights.msm8610
+    lights.msm8226
 
 # GPS
 PRODUCT_PACKAGES += \
-    gps.msm8610
+    gps.msm8226
 
-# libcondor
+# libmatissewifi
 PRODUCT_PACKAGES += \
-    libcondor
+    libmatissewifi
 
 # Stlport
 PRODUCT_PACKAGES += \
@@ -201,12 +201,12 @@ PRODUCT_PACKAGES += \
     libQWiFiSoftApCfg \
     libqsap_sdk
 
-PRODUCT_GMS_CLIENTID_BASE := android-motorola
+PRODUCT_GMS_CLIENTID_BASE := android-samsung
 
 # Prima(pronto firmware)
 PRODUCT_COPY_FILES += \
-    kernel/motorola/msm8610/drivers/staging/prima/firmware_bin/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
-    kernel/motorola/msm8610/drivers/staging/prima/firmware_bin/WCNSS_qcom_cfg.ini:system/etc/firmware/wlan/prima/WCNSS_qcom_cfg.ini
+    kernel/samsung/msm8226/drivers/staging/prima/firmware_bin/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
+    kernel/samsung/msm8226/drivers/staging/prima/firmware_bin/WCNSS_qcom_cfg.ini:system/etc/firmware/wlan/prima/WCNSS_qcom_cfg.ini
 
 # Inhert dalvik heap values from aosp
 $(call inherit-product, frameworks/native/build/phone-xhdpi-1024-dalvik-heap.mk)

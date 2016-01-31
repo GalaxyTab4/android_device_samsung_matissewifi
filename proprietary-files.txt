@@ -1,4 +1,4 @@
-# Blobs from Condor go here
+# Blobs from matissewifi go here
 bin/mm-qcamera-daemon
 bin/thermal-engine
 etc/acdbdata/Bluetooth_cal.acdb
@@ -21,8 +21,8 @@ etc/firmware/cpp_firmware_v1_1_6.fw
 etc/firmware/cpp_firmware_v1_2_0.fw
 etc/firmware/leia_pfp_470.fw
 etc/firmware/leia_pm4_470.fw
-etc/firmware/synaptics-s2316i-13101703-175833-condor.tdat
-etc/firmware/synaptics-s2316t-13101703-175833-condor.tdat
+etc/firmware/synaptics-s2316i-13101703-175833-matissewifi.tdat
+etc/firmware/synaptics-s2316t-13101703-175833-matissewifi.tdat
 etc/firmware/wlan/prima/WCNSS_cfg.dat
 etc/firmware/wlan/prima/WCNSS_qcom_cfg.ini
 etc/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin
@@ -34,8 +34,8 @@ etc/quipc.conf
 etc/sap.conf
 etc/xtra_root_cert.pem
 etc/xtwifi.conf
-lib/hw/camera.msm8610.so
-lib/hw/sensors.msm8610.so
+lib/hw/camera.msm8226.so
+lib/hw/sensors.msm8226.so
 lib/libchromatix_ar0543_common.so
 lib/libchromatix_ar0543_default_video.so
 lib/libchromatix_ar0543_preview.so

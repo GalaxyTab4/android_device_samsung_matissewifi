@@ -31,6 +31,11 @@
 
 #include "power.h"
 
+/* touchkeys */
+#define TK_POWER "/sys/class/input/input1/enabled"
+/* touchscreen */
+#define TS_POWER "/sys/class/input/input2/enabled"
+
 #define CPUFREQ_PATH "/sys/devices/system/cpu/cpu0/cpufreq/"
 #define INTERACTIVE_PATH "/sys/devices/system/cpu/cpufreq/interactive/"
 
@@ -103,12 +108,20 @@ static int boostpulse_open()
     return boostpulse_fd;
 }
 
+static void power_set_interactive_ext(int on) {
+    ALOGD("%s: %s input devices", __func__, on ? "enabling" : "disabling");
+    sysfs_write_str(TK_POWER, on ? "1" : "0");
+    sysfs_write_str(TS_POWER, on ? "1" : "0");
+}
+
 static void power_set_interactive(__attribute__((unused)) struct power_module *module, int on)
 {
     if (!is_profile_valid(current_power_profile)) {
         ALOGD("%s: no power profile selected yet", __func__);
         return;
     }
+
+    power_set_interactive_ext(on);
 
     // break out early if governor is not interactive
     if (!check_governor()) return;
@@ -232,8 +245,8 @@ struct power_module HAL_MODULE_INFO_SYM = {
         .module_api_version = POWER_MODULE_API_VERSION_0_2,
         .hal_api_version = HARDWARE_HAL_API_VERSION,
         .id = POWER_HARDWARE_MODULE_ID,
-        .name = "Condor Power HAL",
-        .author = "The CyanogenMod Project",
+        .name = "msm8960 Power HAL",
+        .author = "Gabriele M",
         .methods = &power_module_methods,
     },
 

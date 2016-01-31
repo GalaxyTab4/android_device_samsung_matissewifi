@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <permissions>
-    <library name="com.motorola.motosignature"
-             file="/system/framework/com.motorola.motosignature.jar"/>
+    <library name="com.samsung.motosignature"
+             file="/system/framework/com.samsung.motosignature.jar"/>
 </permissions>

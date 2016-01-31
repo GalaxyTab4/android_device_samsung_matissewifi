@@ -1,4 +1,4 @@
-# system.prop for msm8610
+# system.prop for msm8226
 
 # ART
 dalvik.vm.dex2oat-flags=--no-watch-dog

@@ -1,3 +1,3 @@
-add_lunch_combo aosp_condor-userdebug
-add_lunch_combo aosp_condor-user
-add_lunch_combo aosp_condor-eng
+add_lunch_combo aosp_matissewifi-userdebug
+add_lunch_combo aosp_matissewifi-user
+add_lunch_combo aosp_matissewifi-eng

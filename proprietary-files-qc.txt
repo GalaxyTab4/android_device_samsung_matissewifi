@@ -1,4 +1,4 @@
-# msm8610-common blobs go here
+# msm8226-common blobs go here
 bin/adsprpcd
 bin/ATFWD-daemon
 bin/batt_health

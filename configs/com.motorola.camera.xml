@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  ~ Copyright (C) 2013-2015 Motorola Mobility LLC,
+  ~ Copyright (C) 2013-2015 samsung Mobility LLC,
   ~ All Rights Reserved.
-  ~ Motorola Mobility Confidential Restricted.
+  ~ samsung Mobility Confidential Restricted.
   -->
 
 <permissions>
-    <feature name="com.motorola.camera" />
-    <feature name="com.motorola.camera.chalmers" />
+    <feature name="com.samsung.camera" />
+    <feature name="com.samsung.camera.chalmers" />
 </permissions>

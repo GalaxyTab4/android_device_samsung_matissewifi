@@ -97,7 +97,7 @@
 #define AID_QCOM_DIAG     3009  /* can read/write /dev/diag */
 #define AID_SENSORS       3011  /* access to /dev/socket/sensor_ctl_socket & QCCI/QCSI */
 
-/* Motorola IDs */
+/* samsung IDs */
 #define AID_MOT_ACCY      9000  /* access to accessory */
 #define AID_MOT_PWRIC     9001  /* power IC */
 #define AID_MOT_USB       9002  /* mot usb */
@@ -113,7 +113,7 @@
 #define AID_MOT_ATVC      9012  /* mot_atvc - This is for use of the ATVC service ONLY */
 #define AID_SPRINT_EXTENSION 9013  /* IKASANTISPRINT-149 sprint extension service */
 #define AID_MOT_DBVC      9014  /* mot_dbvc - This group is used to access DataBlock feature related data */
-/* Motorola IDs */
+/* samsung IDs */
 
 #define AID_RFS           3012  /* Remote Filesystem for peripheral processors */
 #define AID_RFS_SHARED    3013  /* Shared files for Remote Filesystem for peripheral processors  */
@@ -207,7 +207,7 @@ static const struct android_id_info android_ids[] = {
     { "net_bt_stack",  AID_NET_BT_STACK, },
     { "sensors",       AID_SENSORS, },
 
-    /* Motorola IDs */
+    /* samsung IDs */
     { "mot_accy",      AID_MOT_ACCY, },
     { "mot_pwric",     AID_MOT_PWRIC, },
     { "mot_usb",       AID_MOT_USB, },
@@ -223,7 +223,7 @@ static const struct android_id_info android_ids[] = {
     { "mot_atvc",      AID_MOT_ATVC, },
     { "sprint_extension", AID_SPRINT_EXTENSION, },
     { "mot_dbvc",      AID_MOT_DBVC, },
-    /* Motorola IDs */
+    /* samsung IDs */
 
     { "rfs",           AID_RFS, },
     { "rfs_shared",    AID_RFS_SHARED, },
