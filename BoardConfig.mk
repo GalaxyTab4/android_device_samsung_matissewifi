@@ -12,27 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# inherit from common msm8974
--include device/samsung/msm8974-common/BoardConfigCommon.mk
+# inherit from common msm8226
+-include device/samsung/msm8226-common/BoardConfigCommon.mk
 
-TARGET_SPECIFIC_HEADER_PATH := device/samsung/mondrianwifi/include
+TARGET_SPECIFIC_HEADER_PATH := device/samsung/matissewifi/include
 
-TARGET_OTA_ASSERT_DEVICE := mondrianwifi,mondrianwifiue,mondrianwifixx
+TARGET_OTA_ASSERT_DEVICE := matissewifi,matissewifiue,matissewifixx
 
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := MSM8974
+TARGET_BOOTLOADER_BOARD_NAME := MSM8226
 
 # Kernel
-BOARD_CUSTOM_BOOTIMG_MK := device/samsung/mondrianwifi/mkbootimg.mk
+BOARD_CUSTOM_BOOTIMG_MK := device/samsung/matissewifi/mkbootimg.mk
 BOARD_KERNEL_BASE := 0x00000000
-BOARD_KERNEL_CMDLINE := console=null androidboot.hardware=qcom user_debug=31 msm_rtb.filter=0x37 ehci-hcd.park=3
+BOARD_KERNEL_CMDLINE := onsole=null androidboot.hardware=qcom user_debug=23 msm_rtb.filter=0x37
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_KERNEL_SEPARATED_DT := true
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02900000 --tags_offset 0x02700000
-TARGET_KERNEL_CONFIG := slim_mondrian_defconfig
-TARGET_KERNEL_SOURCE := kernel/samsung/mondrianwifi
-KERNEL_TOOLCHAIN_PREFIX := arm-linux-gnueabihf-
-KERNEL_TOOLCHAIN := "$(ANDROID_BUILD_TOP)/prebuilt/$(HOST_OS)-x86/toolchain/linaro-4.9-14.06/bin/"
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x02000000 --tags_offset 0x01E00000
+TARGET_KERNEL_CONFIG := slim_matissewifi_defconfig
+TARGET_KERNEL_SOURCE := kernel/samsung/s3ve3g
+KERNEL_TOOLCHAIN_PREFIX := arm-linux-androideabi-
+KERNEL_TOOLCHAIN := "$(ANDROID_BUILD_TOP)/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/"
 
 # External apps on SD
 TARGET_EXTERNAL_APPS = sdcard1
@@ -50,7 +50,7 @@ USE_CUSTOM_AUDIO_POLICY := 1
 
 # Bluetooth
 BLUETOOTH_HCI_USE_MCT := true
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/mondrianwifi/bluetooth
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/samsung/matissewifi/bluetooth
 BOARD_HAVE_BLUETOOTH_QCOM := true
 QCOM_BT_USE_SMD_TTY := true
 
@@ -63,11 +63,11 @@ BOARD_CHARGER_SHOW_PERCENTAGE := true
 
 # GPS
 TARGET_NO_RPC := true
-TARGET_GPS_HAL_PATH := device/samsung/mondrianwifi/gps
+TARGET_GPS_HAL_PATH := device/samsung/matissewifi/gps
 TARGET_PROVIDES_GPS_LOC_API := true
 
 # Hardware
-BOARD_HARDWARE_CLASS += device/samsung/mondrianwifi/cmhw
+BOARD_HARDWARE_CLASS += device/samsung/matissewifi/cmhw
 
 # Graphics
 TARGET_HAVE_NEW_GRALLOC := true
@@ -90,7 +90,7 @@ TARGET_USERIMAGES_USE_F2FS := true
 
 # PowerHAL
 TARGET_POWERHAL_VARIANT := qcom
-TARGET_POWERHAL_SET_INTERACTIVE_EXT := device/samsung/mondrianwifi/power/power_ext.c
+TARGET_POWERHAL_SET_INTERACTIVE_EXT := device/samsung/matissewifi/power/power_ext.c
 
 # Recovery
 COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
@@ -100,11 +100,11 @@ BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_RECOVERY_SWIPE := true
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 BOARD_USES_MMCUTILS := true
-TARGET_RECOVERY_FSTAB := device/samsung/mondrianwifi/rootdir/etc/fstab.qcom
+TARGET_RECOVERY_FSTAB := device/samsung/matissewifi/rootdir/etc/fstab.qcom
 
 # SELinux
 include device/qcom/sepolicy/sepolicy.mk
-BOARD_SEPOLICY_DIRS += device/samsung/mondrianwifi/sepolicy
+BOARD_SEPOLICY_DIRS += device/samsung/matissewifi/sepolicy
 
 # Wifi
 BOARD_HAS_QCOM_WLAN := true

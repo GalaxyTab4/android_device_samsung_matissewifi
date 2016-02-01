@@ -1,10 +1,5 @@
 [
   {
-    "repository": "SlimRoms/device_samsung_msm8974-common",
-    "target_path": "device/samsung/msm8974-common",
-    "branch": "mm6.0"
-  },
-  {
     "repository": "SlimRoms/device_samsung_qcom-common",
     "target_path": "device/samsung/qcom-common",
     "branch": "mm6.0"
@@ -15,9 +10,9 @@
     "branch": "mm6.0"
   },
   {
-    "repository": "SlimRoms/kernel_samsung_mondrianwifi",
-    "target_path": "kernel/samsung/mondrianwifi",
-    "branch": "mm6.0"
+    "repository": "GalaxyTab4/android_kernel_samsung_s3ve3g",
+    "target_path": "kernel/samsung/matissewifi",
+    "branch": "cm-13.0"
   },
   {
     "repository": "SlimRoms/hardware_samsung",

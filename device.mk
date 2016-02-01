@@ -17,7 +17,7 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
 # Get non-open-source specific aspects
-$(call inherit-product-if-exists, vendor/samsung/mondrianwifi/mondrianwifi-vendor.mk)
+$(call inherit-product-if-exists, vendor/samsung/matissewifi/matissewifi-vendor.mk)
 
 ## We are a tablet, not a phone
 PRODUCT_CHARACTERISTICS := tablet
@@ -27,12 +27,11 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
 # Device uses high-density artwork where available
 PRODUCT_AAPT_CONFIG := normal
-PRODUCT_AAPT_PREF_CONFIG := xxhdpi
+PRODUCT_AAPT_PREF_CONFIG := mdpi
 
 # Boot animation
-TARGET_BOOTANIMATION_HALF_RES := true
-TARGET_SCREEN_HEIGHT := 2560
-TARGET_SCREEN_WIDTH := 1600
+TARGET_SCREEN_HEIGHT := 1280
+TARGET_SCREEN_WIDTH := 800
 
 $(call inherit-product, frameworks/native/build/tablet-7in-xhdpi-2048-dalvik-heap.mk)
 
@@ -55,13 +54,13 @@ PRODUCT_PACKAGES += \
 
 # Camera
 PRODUCT_PACKAGES += \
-    camera.msm8974 \
+    camera.msm8226 \
     libshim_qcopt \
     libxml2
 
 # GPS
 PRODUCT_PACKAGES += \
-    gps.msm8974
+    gps.msm8226
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/gps/etc/gps.conf:/system/etc/gps.conf \
@@ -87,11 +86,11 @@ PRODUCT_PACKAGES += \
 
 # Keystore
 PRODUCT_PACKAGES += \
-    keystore.msm8974
+    keystore.msm8226
 
 # Lights
 PRODUCT_PACKAGES += \
-    lights.msm8974
+    lights.msm8226
 
 # Media
 PRODUCT_COPY_FILES += \
@@ -99,7 +98,7 @@ PRODUCT_COPY_FILES += \
 
 # Add kernel config
 PRODUCT_COPY_FILES += \
-    device/samsung/mondrianwifi/rootdir/etc/init.slim.kernel.sh:system/bin/init.slim.kernel.sh
+    device/samsung/matissewifi/rootdir/etc/init.slim.kernel.sh:system/bin/init.slim.kernel.sh
 
 PRODUCT_PROPERTY_OVERRIDES += \
     av.offload.enable=false
@@ -125,9 +124,8 @@ PRODUCT_PACKAGES += \
 
 # Thermal
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/configs/thermal-engine-8974.conf:system/etc/thermal-engine-8974.conf \
-    $(LOCAL_PATH)/configs/thermald-8974.conf:system/etc/thermald-8974.conf
-
+    $(LOCAL_PATH)/configs/thermal-engine-8226.conf:system/etc/thermal-engine-8226.conf
+    
 # Wifi
 PRODUCT_PACKAGES += \
     dhcpcd.conf \
@@ -149,5 +147,5 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/wifi/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
     $(LOCAL_PATH)/wifi/WCNSS_qcom_wlan_nv.bin:system/etc/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin
 
-# Common msm8974
-$(call inherit-product, device/samsung/msm8974-common/msm8974.mk)
+# Common msm8226
+$(call inherit-product, device/samsung/msm8226-common/msm8226.mk)

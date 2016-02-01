@@ -88,7 +88,7 @@ vendor/lib/libmm-color-convertor.so
 lib/libinvensense_hal.so
 lib/libmllite.so
 lib/libmplmpu.so
-lib/hw/sensors.msm8974.so
+lib/hw/sensors.msm8226.so
 
 #  Radio
 bin/ds_fmc_appd
@@ -129,8 +129,8 @@ cameradata/datapattern_420sp.yuv
 cameradata/datapattern_front_420sp.yuv
 etc/imx134_module_info.xml
 etc/imx135_module_info.xml
-# Stock would be: lib/hw/camera.msm8974.so:lib/hw/camera.vendor.msm8974.so
-lib/hw/camera.vendor.msm8974.so
+# Stock would be: lib/hw/camera.msm8226.so:lib/hw/camera.vendor.msm8226.so
+lib/hw/camera.vendor.msm8226.so
 lib/libTsAe.so
 lib/libTsAf.so
 lib/libTs_J_Accm.so
