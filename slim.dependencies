@@ -1,5 +1,25 @@
 [
   {
+    "repository": "GalaxyTab4/android_device_samsung_matissewifi",
+    "target_path": "device/samsung/matissewifi",
+    "branch": "slim_mm6.0"
+  },
+  {
+    "repository": "GalaxyTab4/android_device_samsung_msm8226-common",
+    "target_path": "device/samsung/msm8226-common",
+    "branch": "slim_mm6.0"
+  },
+  {
+    "repository": "GalaxyTab4/android_kernel_samsung_s3ve3g",
+    "target_path": "kernel/samsung/matissewifi",
+    "branch": "slim_mm6.0"
+  },
+  {
+    "repository": "GalaxyTab4/android_vendor_samsung_matissewifi",
+    "target_path": "vendor/samsung/matissewifi",
+    "branch": "slim_mm6.0"
+  },
+  {
     "repository": "SlimRoms/device_samsung_qcom-common",
     "target_path": "device/samsung/qcom-common",
     "branch": "mm6.0"
@@ -10,18 +30,18 @@
     "branch": "mm6.0"
   },
   {
-    "repository": "GalaxyTab4/android_kernel_samsung_s3ve3g",
-    "target_path": "kernel/samsung/matissewifi",
-    "branch": "cm-13.0"
-  },
-  {
     "repository": "SlimRoms/hardware_samsung",
     "target_path": "hardware/samsung",
+    "branch": "mm6.0"
+  },
+  {
+    "repository": "SlimRoms/external_stlport",
+    "target_path": "external/stlport",
     "branch": "mm6.0"
   },
   {
     "repository": "SlimRoms/android_external_sony_boringssl-compat",
     "target_path": "external/sony/boringssl-compat",
     "branch": "mm6.0"
-   }
+  }
 ]
