@@ -7,19 +7,19 @@
 log_file="/data/kernel-boot.log"
 
 echo "----------------------------------------------------" >$log_file
-echo "Slim Mondrianwifi Kernel - execution of kernel options init script" >>$log_file
+echo "Slim matissewifi Kernel - execution of kernel options init script" >>$log_file
 echo "----------------------------------------------------" >>$log_file
 echo "Kernel version : `uname -a`" >>$log_file
 
-echo `date +"%F %R:%S : Checking for Slim Mondrianwifi kernel..."` >>$log_file
+echo `date +"%F %R:%S : Checking for Slim matissewifi kernel..."` >>$log_file
 
 if [ "`uname -r | grep SlimLP`" == "" ]
   then
-    echo `date +"%F %R:%S : No Slim Mondrianwifi kernel found, skip executing the config file"` >>$log_file
+    echo `date +"%F %R:%S : No Slim matissewifi kernel found, skip executing the config file"` >>$log_file
     exit
 fi;
 
-echo `date +"%F %R:%S : Slim Mondrianwifi kernel found, continue executing the config file..."` >>$log_file
+echo `date +"%F %R:%S : Slim matissewifi kernel found, continue executing the config file..."` >>$log_file
 
 echo `date +"%F %R:%S : Waiting for Android to start..."` >>$log_file
 
