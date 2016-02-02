@@ -136,6 +136,7 @@ etc/E08QL_s5k4h5yb_module_info.xml
 # Stock would be: lib/hw/camera.msm8226.so:lib/hw/camera.vendor.msm8226.so
 lib/hw/camera.msm8226.so:lib/hw/camera.vendor.msm8226.so
 #lib/hw/camera.vendor.msm8226.so
+lib/libAfSingle.so
 lib/libTsAe.so
 lib/libTsAf.so
 lib/libTs_J_Accm.so
@@ -213,7 +214,8 @@ vendor/lib/libqc-opt.so
 
 # DRM
 bin/qseecomd
-lib/drm/libfwdlockengine.so
+#lib/drm/libfwdlockengine.so - built from source
+#vendor/lib/mediadrm/libdrmclearkeyplugin.so - built from source
 vendor/lib/libdrmdiag.so
 vendor/lib/libdrmfs.so
 vendor/lib/libdrmtime.so
@@ -225,7 +227,6 @@ lib/libdrmdecrypt.so
 #vendor/lib/lib-sec-disp.so
 lib/drm/libdrmwvmplugin.so
 vendor/lib/mediadrm/libwvdrmengine.so
-#vendor/lib/mediadrm/libdrmclearkeyplugin.so
 vendor/lib/libwvdrm_L1.so
 lib/libwvm.so
 lib/libWVphoneAPI.so
