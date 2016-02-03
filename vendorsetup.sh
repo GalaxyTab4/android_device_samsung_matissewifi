@@ -1,2 +1,2 @@
-add_lunch_combo slim_matissewifi-userdebug
-
+add_lunch_combo omni_matissewifi-userdebug
+add_lunch_combo omni_matissewifi-eng
