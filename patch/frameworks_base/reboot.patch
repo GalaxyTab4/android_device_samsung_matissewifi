@@ -1,0 +1,683 @@
+From ed783b3bdebde8c6368dd69ad4daf7ce48740ecd Mon Sep 17 00:00:00 2001
+From: Lars Greiss <kufikugel@googlemail.com>
+Date: Fri, 21 Nov 2014 22:40:46 +0100
+Subject: [PATCH] Frameworks: Add reboot menu - prepare for Slims Global menu -
+ misc changes
+
+Adding advanced reboot menu like it was on kk4.4
+Adding advanced reboot secure option
+Move reboot into safe mode from longpress power to longpress reboot
+Enable for now per default Airplane mode and sound and reboot till we have imported our SlimActions class to make in configurable
+
+misc changes and adaptions to lp
+
+Change-Id: Idd4f56d985ac51ade5f8deb2597d8f1dda22088a
+---
+ core/java/android/provider/Settings.java           |   7 ++
+ core/java/android/view/WindowManagerPolicy.java    |   1 +
+ .../com/android/internal/util/slim/BuildInfo.java  |  34 +++++++
+ .../res/res/drawable-hdpi/ic_lock_reboot_alpha.png | Bin 0 -> 1645 bytes
+ .../res/res/drawable-mdpi/ic_lock_reboot_alpha.png | Bin 0 -> 3374 bytes
+ .../res/drawable-xhdpi/ic_lock_reboot_alpha.png    | Bin 0 -> 1558 bytes
+ .../res/drawable-xxhdpi/ic_lock_reboot_alpha.png   | Bin 0 -> 2275 bytes
+ core/res/res/drawable/ic_lock_reboot.xml           |  19 ++++
+ core/res/res/values/config.xml                     |   3 +
+ core/res/res/values/slim_arrays.xml                |  36 ++++++++
+ core/res/res/values/slim_strings.xml               |  32 +++++++
+ core/res/res/values/slim_symbols.xml               |  28 ++++++
+ .../com/android/server/policy/GlobalActions.java   |  10 +--
+ .../com/android/server/power/ShutdownThread.java   |  99 +++++++++++++++++----
+ .../android/server/wm/WindowManagerService.java    |   6 ++
+ 15 files changed, 250 insertions(+), 25 deletions(-)
+ create mode 100644 core/java/com/android/internal/util/slim/BuildInfo.java
+ create mode 100644 core/res/res/drawable-hdpi/ic_lock_reboot_alpha.png
+ create mode 100644 core/res/res/drawable-mdpi/ic_lock_reboot_alpha.png
+ create mode 100644 core/res/res/drawable-xhdpi/ic_lock_reboot_alpha.png
+ create mode 100644 core/res/res/drawable-xxhdpi/ic_lock_reboot_alpha.png
+ create mode 100644 core/res/res/drawable/ic_lock_reboot.xml
+ create mode 100644 core/res/res/values/slim_arrays.xml
+ create mode 100644 core/res/res/values/slim_strings.xml
+ create mode 100644 core/res/res/values/slim_symbols.xml
+
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index 90f0707..42352fc 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -5592,6 +5592,12 @@ public final class Settings {
+         public static final String ASSIST_SCREENSHOT_ENABLED = "assist_screenshot_enabled";
+ 
+         /**
++         * Whether to include options in power menu for rebooting into recovery and bootloader
++         * @hide
++         */
++        public static final String ADVANCED_REBOOT = "advanced_reboot";
++
++        /**
+          * Names of the service components that the current user has explicitly allowed to
+          * see all of the user's notifications, separated by ':'.
+          *
+@@ -5787,6 +5793,7 @@ public final class Settings {
+             SLEEP_TIMEOUT,
+             DOUBLE_TAP_TO_WAKE,
+             CAMERA_GESTURE_DISABLED,
++            ADVANCED_REBOOT
+         };
+ 
+         /**
+diff --git a/core/java/android/view/WindowManagerPolicy.java b/core/java/android/view/WindowManagerPolicy.java
+index aaf6052..f86d6f7 100644
+--- a/core/java/android/view/WindowManagerPolicy.java
++++ b/core/java/android/view/WindowManagerPolicy.java
+@@ -442,6 +442,7 @@ public interface WindowManagerPolicy {
+ 
+         public void shutdown(boolean confirm);
+         public void rebootSafeMode(boolean confirm);
++        public void reboot();
+ 
+         /**
+          * Return the window manager lock needed to correctly call "Lw" methods.
+diff --git a/core/java/com/android/internal/util/slim/BuildInfo.java b/core/java/com/android/internal/util/slim/BuildInfo.java
+new file mode 100644
+index 0000000..f6591cb
+--- /dev/null
++++ b/core/java/com/android/internal/util/slim/BuildInfo.java
+@@ -0,0 +1,34 @@
++/*
++* Copyright (C) 2014 SlimRoms Project
++*
++* Licensed under the Apache License, Version 2.0 (the "License");
++* you may not use this file except in compliance with the License.
++* You may obtain a copy of the License at
++*
++* http://www.apache.org/licenses/LICENSE-2.0
++*
++* Unless required by applicable law or agreed to in writing, software
++* distributed under the License is distributed on an "AS IS" BASIS,
++* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++* See the License for the specific language governing permissions and
++* limitations under the License.
++*/
++package com.android.internal.util.slim;
++
++import android.os.SystemProperties;
++
++public class BuildInfo {
++
++    public static final String BUILD_TYPE_UNOFFICIAL = "UNOFFICIAL";
++
++    private static final String BUILD_TYPE_PROP = "ro.slim.buildtype";
++    private static final String SLIM_VERSION_PROP = "ro.slim.version";
++
++    public static String getSlimBuildType() {
++        return SystemProperties.get(BUILD_TYPE_PROP, "");
++    }
++
++    public static String getSlimVersion() {
++        return SystemProperties.get(SLIM_VERSION_PROP, "");
++    }
++}
+diff --git a/core/res/res/drawable-hdpi/ic_lock_reboot_alpha.png b/core/res/res/drawable-hdpi/ic_lock_reboot_alpha.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..ca00936e5406a6ccb3c9b1629d06eae10c820b49
+GIT binary patch
+literal 1645
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable-mdpi/ic_lock_reboot_alpha.png b/core/res/res/drawable-mdpi/ic_lock_reboot_alpha.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..2b125b98f4cba4bc7d0c2cd619e50f54343de7fc
+GIT binary patch
+literal 3374
+zcmV+}4bk$6P)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F800009a7bBm000XU
+z000XU0RWnu7ytkYPiaF#P*7-ZbZ>KLZ*U+<Lqi~Na&Km7Y-Iodc-oy)XH-+^7Crag
+z^g>IBfRsybQWXdwQbLP>6p<z>Aqfylh#{fb6;Z(vMMVS~$e@S=j*ftg6;Uh<iVD~V
+z<RPMtgQJLw%KPDaqifc@_vX$1wbwr9tn;0-&j-K=43<bUQ8j=JsX`tR;Dg7+#^K~H
+zK!FM*Z~zbpvt%K2{UZSY_<lS*D<Z%Lz5oGu(+dayz)hRLFdT>f59&ghTmgWD0l;*T
+zI7<kC6aYYajzXpYKt=(8otP$50H6c_V9R4-;{Z@C0AMG7=F<Rxo%or10RUT+Ar%3j
+zkpLhQWr#!oXgdI`&sK^>09Y^p6lP1rIRMx#05C~cW=H_Aw*bJ-5DT&Z2n+x)QHX^p
+z00esgV8|mQcmRZ%02D^@S3L16t`O%c004NIvOKvYIYoh62rY33S640`D9%Y2D-<?i
+z0%4j!F2Z@488U%158(66005wo6%pWr^Zj_v4zAA5HjcIqUoGmt2LB>rV&neh&#Q1i
+z007~1e$oCcFS8neI|hJl{-P!B1ZZ9hpmq0)X0i`JwE&>$+E?>%_<lS*MWK+n+1cgf
+z<k(8YLR(?VSAG6x!e78w{cQPuJpA|d;J)G{fihizM+Erb!p!tcr5w+a34~(Y=8s4G
+zw+sLL9n&JjNn*KJDiq^U5^;`1nvC-@r6P$!k}1U{(*I=Q-z@tBKHoI}uxdU5dyy@u
+zU1J0GOD7Ombim^G008p4Z^6_k2m^p<gW=D2|L;HjN1!DDfM!XOaR2~bL?kX$%CkSm
+z2mk;?pn)o|K^yeJ7%adB9Ki+L!3+FgHiSYX#KJ-lLJDMn9CBbOtb#%)hRv`YDqt_v
+zKpix|QD}yfa1JiQRk#j4a1Z)n2%f<xynzV>LC6RbVIkUx0b+_+BaR3cnT7Zv!AJxW
+zizFb)h!jyGOOZ85F;a?DAXP{m@;!0_Ifq<Ex{*7`05XF7hP+2Hl!3BQJ=6@fL%FCo
+z8iYoo3(#bAF`ADSpqtQgv>H8(HlgRxt7s3}k3K`kFu>>-2Q$QMFfPW!La{h336o>X
+zu_CMttHv6zR;&ZNiS=X8v3CR#fknUxHUxJ<AYmRsNLWl*PS{AOARHt#5!wki2?K;t
+z!Y3k=s7tgax)J%r7-BLphge7~Bi0g+6E6^Zh(p9TBoc{3GAFr^0!gu?RMHaCM$&Fl
+zBk3%un>0uoBa_M6WNWeqIg~6QE69c9o#eyhGvpiOA@W-aonk<7r1(?fC{oI5N*U!4
+z<uv66WtcKSRim0x-Ke2d5jBrmLam{;Qm;{ms1r1GnmNsb7D-E`t)i9F8fX`2_i3-_
+zbh;7Ul^#x)&{xvS=|||7=mYe33=M`AgU5(xC>fg=2N-7=cNnjjOr{yriy6mMFgG#l
+znCF=fnQv8CDz++o6_Lscl}eQ+l^ZHARH>?_s@|##Rr6KLRFA1%Q+=*RRWnoLsR`7U
+zt5vF<Q0r40Q)j6=sE4X&sBct1q<&fbi3VB2Ov6t@q*0);U*o*SAPZv|vv@2aYYnT0
+zb%8a+Cb7-ge0D0knEf5Qi#@8Tp*ce{N;6lpQuCB%KL_KOarm5cP6_8Ir<e17iry6O
+zDdH&`rZh~sF=bq9s+O0QSgS~@QL9Jmy*94xr=6y~MY~!1fet~(N+(<=M`w@D1)b+p
+z*;C!83a1uLJv#NSE~;y#8=<>IcfW3@?wFpwUVxrVZ>QdQz32KIeJ}k~{cZZE^+ya?
+z2D1z#2HOnI7(B%_ac?{wFUQ;QQA1tBKtrWrm0_3Rgps+?Jfqb{jYbcQX~taRB;#$y
+zZN{S}1|}gUOHJxc?wV3fxuz+mJ4`!F$IZ;mqRrNsHJd##*D~ju=bP7?-?v~|cv>vB
+zsJ6IeNwVZxrdjT`yl#bBIa#GxRa#xMMy;K#CDyyGyQdMSxlWT#tDe?p!?5wT$+oGt
+z8L;Kp2HUQ-ZMJ=3XJQv;x5ci*?vuTfeY$;({XGW_huIFR9a<fJbF^|4I#xQ~n$Dc=
+zKYhjYmgz5NSkDm8*fZm{6U!;YX`NG>(?@3)XSs8O^N5RyOM=TTmp(3=8^+zpz2r)C
+z^>JO{deZfso3oq3?Wo(Y?l$ge?uXo;%ru`Vo>?<<(8I_>;8Eq#KMS9gFl*neeosSB
+zfoHYnBQIkwkyowPu(zdms`p{<7e4kra-ZWq<2*OsGTvEV%s0Td$hXT+!*8Bnh2KMe
+zBmZRodjHV?r+_5^X9J0WL4jKW`}lf%A-|44I@@LTvf1rHjG(ze6+w@Jt%Bvjts!X0
+z?2xS?_ve_-k<Mujg;0Lz*3buG=3$G&ehepthlN*$KaOySSQ^nWmo<0M+(UEUMEXRQ
+zMBbZcF;6+KElM>iKB_KiJlZ$9G`c^=E@oNG)mWWaNo-3TIW8)$Hg0Ub-~8?KhvJ>$
+z3*&nim@mj(aCxE5!t{lw7O5^0EIO7zOo&c6l<+|iDySBWCGrz@C5{St!X3hAA}`T4
+z(TLbXTq+(;@<=L8dXnssyft|w#WSTW<++3>sgS%(4NTpeI-VAqb|7ssJvzNHgOZVu
+zaYCvgO_R1~>SyL=cFU|~g|hy|Zi}}s9+d~lYqOB71z9Z$wnC=pR9Yz4DhIM>Wmjgu
+z&56o6maCpC&F##y%G;1PobR9i?GnNg;gYtchD%p19a!eQtZF&3JaKv33gZ<8D~47E
+ztUS1iwkmDaPpj=$m#%)jCVEY4fnLGNg2A-`YwHVD3gv};>)hAvT~AmqS>Lr``i7kw
+zJ{5_It`yrBmlc25DBO7E8;5VoznR>Ww5hAaxn$2~(q`%A-YuS64wkBy=9dm`4cXeX
+z4c}I@?e+FW+b@^RDBHV(wnMq2zdX3SWv9u`%{xC-q*U}&`cyXV(%rRT*Z6MH?i+i&
+z_B8C(+grT%{XWUQ+f@NoP1R=AW&26{v-dx)iK^-Nmiuj8txj!m?Z*Ss1N{dh4z}01
+z)YTo*JycSU)+_5r4#yw9{+;i4Ee$peRgIj+;v;ZGdF1K$3E%e~4LaI(jC-u%2h$&R
+z9cLXcYC@Xwnns&bn)_Q~Te?roKGD|d-g^8;+aC{{G(1^(O7m37Y1-+6)01cN&y1aw
+zoqc{T`P^XJqPBbIW6s}d4{z_f5Om?vMgNQEJG?v2T=KYd^0M3I6IZxbny)%vZR&LD
+zJpPl@Psh8QyPB@KTx+@RdcC!KX7}kEo;S|j^u2lU7XQ}Oo;f|;z4Ll+_r>@1-xl3|
+zawq-H%e&ckC+@AhPrP6BK<z=<L*0kfKU@CX*zeqbYQT4(^U>T#_XdT7&;F71j}Joy
+zkC~6lh7E@6o;W@^IpRNZ{ptLtL(gQ-CY~4mqW;US7Zxvm_|@yz&e53Bp_lTPlfP|z
+zrTyx_>lv@x#=^!PzR7qqF<$gm`|ZJZ+;<)Cqu&ot<a{81DF0~rvGr5Xr~8u`lav1h
+z1DNytV>2z=0000WV@Og>004R=004l4008;_004mL004C`008P>0026e000+nl3&F}
+z00076Nkl<Zc-qXD&x=iA7{|Z&UNkb%(A+4~xCTv>jWmtP5VKM=HRUg`ktCU&G#0Y4
+zA~v$IoGe%<NxC&c3Ry5|j3!bhZj+>2mpk*ZdF7qQJLlf>V;bK&i|3s8`#j&yIq&m*
+z-W;H%L_P(#D5-lX1$0V!Ch3f%Wr?!@Nv|&cVhrd>k|#;w?Z7eMCi77PE&{EKC1416
+z=n6&QwOd=rO29VY9`SG$SdoQ*1Hk7Pg<m+1pQA6SfL`ERpvYU`9B|ybR|U=kD?NS(
+zFbd28BXI>3fhkkC3Je3Q+?sB8zYOd$`~je1_=9l-+%V)BV82<@4V(h<0sbc7k;(A^
+zXlq8mPT;3UtOG|9Y}d8GxDj!-83C6K=~{|rHQ@e%KbSQC$v*;GfOj6@2T)2OK(2TA
+znD;5I7j#J~dGQlTQz`xCmWg|#%&1dR!Hb_~;J7bMyg5q18WT@vAYevP&5Kt@379qU
+z@(ctN%v+s}5>PR5DFXo;&Ad>F67XJ9)r<R54lR<@Z{qQ&fg}$+^|s6$urI|HYyl>`
+ze7}GljT+Huvv0>1Xt&K=!+~76MgrP_X+yk}pm@J)WIl$PHKP*&8@>?ZO&kKg8vcV2
+zf1w0<;7&k988{d*ZfymwI0N(X1=tee<RT6xZIbRv+7o#8O44K3rt6a0CGB==Tg}?<
+zk_IJ}lZ@r-fZHU;B(OK_P?`fy0-s_Ot^wD94UO{WVw??&l8#C`EU72p8+A!<B;A)Z
+z8Ze<CatRNo9j;BUcYaZk^ik48z)u!Mz<+T%&IG>)05-pzS>qJxkpKVy07*qoM6N<$
+Ef|(^cwg3PC
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable-xhdpi/ic_lock_reboot_alpha.png b/core/res/res/drawable-xhdpi/ic_lock_reboot_alpha.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..653970f226006a136b4ec8b18186934e148758cc
+GIT binary patch
+literal 1558
+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
+IM6N<$g0FPAvH$=8
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable-xxhdpi/ic_lock_reboot_alpha.png b/core/res/res/drawable-xxhdpi/ic_lock_reboot_alpha.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..11e04aeecb41cadb9853a0122d6175e153db96ed
+GIT binary patch
+literal 2275
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable/ic_lock_reboot.xml b/core/res/res/drawable/ic_lock_reboot.xml
+new file mode 100644
+index 0000000..5dae007
+--- /dev/null
++++ b/core/res/res/drawable/ic_lock_reboot.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2014 SlimRoms Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
++    android:src="@drawable/ic_lock_reboot_alpha"
++    android:tint="?attr/colorControlNormal" />
+diff --git a/core/res/res/values/config.xml b/core/res/res/values/config.xml
+index e937a74..37d0af9 100644
+--- a/core/res/res/values/config.xml
++++ b/core/res/res/values/config.xml
+@@ -2018,8 +2018,11 @@
+          -->
+     <string-array translatable="false" name="config_globalActionsList">
+         <item>power</item>
++        <item>reboot</item>
++        <item>airplane</item>
+         <item>bugreport</item>
+         <item>users</item>
++        <item>silent</item>
+     </string-array>
+ 
+     <!-- Number of milliseconds to hold a wake lock to ensure that drawing is fully
+diff --git a/core/res/res/values/slim_arrays.xml b/core/res/res/values/slim_arrays.xml
+new file mode 100644
+index 0000000..c7c5a24
+--- /dev/null
++++ b/core/res/res/values/slim_arrays.xml
+@@ -0,0 +1,36 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++/* Copyright 2015, SlimRoms project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++-->
++
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++    <!-- Defines the shutdown options shown in the reboot dialog. -->
++    <array name="shutdown_reboot_options" translatable="false">
++        <item>@string/reboot_reboot</item>
++        <item>@string/reboot_recovery</item>
++        <item>@string/reboot_bootloader</item>
++    </array>
++
++    <!-- Do not translate. Defines the shutdown actions passed to the kernel.
++        The first item should be empty for regular reboot. -->
++    <string-array name="shutdown_reboot_actions" translatable="false">
++        <item></item>
++        <item>recovery</item>
++        <item>bootloader</item>
++    </string-array>
++
++</resources>
+diff --git a/core/res/res/values/slim_strings.xml b/core/res/res/values/slim_strings.xml
+new file mode 100644
+index 0000000..75c1598
+--- /dev/null
++++ b/core/res/res/values/slim_strings.xml
+@@ -0,0 +1,32 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2015 SlimRoms
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++    <!-- Reboot menu -->
++    <!-- Button to reboot the phone, within the Reboot Options dialog -->
++    <string name="reboot_reboot">Reboot</string>
++    <!-- Button to reboot the phone into recovery, within the Reboot Options dialog -->
++    <string name="reboot_recovery">Recovery</string>
++    <!-- Button to reboot the phone into bootloader, within the Reboot Options dialog -->
++    <string name="reboot_bootloader">Bootloader</string>
++    <!-- Button to reboot the phone into download, within the Reboot Options dialog -->
++    <string name="reboot_download">Download</string>
++    <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
++    <string name="reboot_progress">Rebooting\u2026</string>
++    <!-- Button to reboot the phone, within the Phone Options dialog -->
++    <string name="reboot_system" product="tablet">Reboot tablet</string>
++    <string name="reboot_system" product="default">Reboot phone</string>
++</resources>
+diff --git a/core/res/res/values/slim_symbols.xml b/core/res/res/values/slim_symbols.xml
+new file mode 100644
+index 0000000..409051e
+--- /dev/null
++++ b/core/res/res/values/slim_symbols.xml
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++/* Copyright 2015, SlimRoms project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++-->
++<resources>
++
++    <!-- Config Power Menu -->
++    <java-symbol type="drawable" name="ic_lock_reboot" />
++    <java-symbol type="string" name="global_action_reboot" />
++    <java-symbol type="array" name="shutdown_reboot_actions" />
++    <java-symbol type="array" name="shutdown_reboot_options" />
++    <java-symbol type="string" name="reboot_system" />
++    <java-symbol type="string" name="reboot_progress" />
++
++</resources>
+diff --git a/services/core/java/com/android/server/policy/GlobalActions.java b/services/core/java/com/android/server/policy/GlobalActions.java
+index 8e73495..2208ae3 100644
+--- a/services/core/java/com/android/server/policy/GlobalActions.java
++++ b/services/core/java/com/android/server/policy/GlobalActions.java
+@@ -40,7 +40,6 @@ import android.net.ConnectivityManager;
+ import android.os.Build;
+ import android.os.Bundle;
+ import android.os.Handler;
+-import android.os.IPowerManager;
+ import android.os.Message;
+ import android.os.RemoteException;
+ import android.os.ServiceManager;
+@@ -389,14 +388,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+ 
+         @Override
+         public void onPress() {
+-            try {
+-                IPowerManager pm = IPowerManager.Stub.asInterface(ServiceManager
+-                        .getService(Context.POWER_SERVICE));
+-                pm.reboot(true, null, false);
+-            } catch (RemoteException e) {
+-                Log.e(TAG, "PowerManager service died!", e);
+-                return;
+-            }
++            mWindowManagerFuncs.reboot();
+         }
+     }
+ 
+diff --git a/services/core/java/com/android/server/power/ShutdownThread.java b/services/core/java/com/android/server/power/ShutdownThread.java
+index d5ad30c..4e89e17 100644
+--- a/services/core/java/com/android/server/power/ShutdownThread.java
++++ b/services/core/java/com/android/server/power/ShutdownThread.java
+@@ -21,6 +21,7 @@ import android.app.ActivityManagerNative;
+ import android.app.AlertDialog;
+ import android.app.Dialog;
+ import android.app.IActivityManager;
++import android.app.KeyguardManager;
+ import android.app.ProgressDialog;
+ import android.bluetooth.BluetoothAdapter;
+ import android.bluetooth.IBluetoothManager;
+@@ -46,11 +47,15 @@ import android.os.storage.IMountService;
+ import android.os.storage.IMountShutdownObserver;
+ import android.system.ErrnoException;
+ import android.system.Os;
++import android.provider.Settings;
+ 
+ import com.android.internal.telephony.ITelephony;
++import com.android.internal.util.slim.BuildInfo;
+ import com.android.server.pm.PackageManagerService;
+ 
+ import android.util.Log;
++import android.view.IWindowManager;
++import android.view.KeyEvent;
+ import android.view.WindowManager;
+ import java.lang.reflect.Method;
+ import dalvik.system.PathClassLoader;
+@@ -164,27 +169,79 @@ public final class ShutdownThread extends Thread {
+             resourceId = com.android.internal.R.string.reboot_confirm;
+         }
+ 
++        final int titleResourceId = mRebootSafeMode
++                 ? com.android.internal.R.string.reboot_safemode_title
++                 : (mReboot
++                         ? com.android.internal.R.string.reboot_system
++                         : com.android.internal.R.string.power_off);
++
+         Log.d(TAG, "Notifying thread to start shutdown longPressBehavior=" + longPressBehavior);
+ 
+         if (confirm) {
+             final CloseDialogReceiver closer = new CloseDialogReceiver(context);
+             if (sConfirmDialog != null) {
+                 sConfirmDialog.dismiss();
++                sConfirmDialog = null;
++            }
++            if (mReboot && !mRebootSafeMode) {
++                // Determine if primary user is logged in
++                boolean isPrimary = UserHandle.getCallingUserId() == UserHandle.USER_OWNER;
++
++                // See if the advanced reboot menu is enabled
++                // (only if primary user) and check the keyguard state
++                int advancedReboot = isPrimary ? getAdvancedReboot(context) : 0;
++                KeyguardManager km = (KeyguardManager) context.getSystemService(
++                        Context.KEYGUARD_SERVICE);
++                boolean locked = km.inKeyguardRestrictedInputMode() && km.isKeyguardSecure();
++
++                if ((advancedReboot == 1 && !locked) || advancedReboot == 2) {
++                    // Include options in power menu for rebooting into recovery or bootloader
++                    sConfirmDialog = new AlertDialog.Builder(context)
++                            .setTitle(titleResourceId)
++                            .setItems(
++                                    com.android.internal.R.array.shutdown_reboot_options,
++                                    new DialogInterface.OnClickListener() {
++                                public void onClick(DialogInterface dialog, int which) {
++                                    if (which < 0)
++                                        return;
++
++                                    String actions[] = context.getResources().getStringArray(
++                                            com.android.internal.R.array.shutdown_reboot_actions);
++
++                                    if (actions != null && which < actions.length)
++                                        mRebootReason = actions[which];
++
++                                    mReboot = true;
++                                    beginShutdownSequence(context);
++                                }
++                            })
++                            .create();
++                            sConfirmDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
++                                public boolean onKey (DialogInterface dialog, int keyCode,
++                                        KeyEvent event) {
++                                    if (keyCode == KeyEvent.KEYCODE_BACK) {
++                                        mReboot = false;
++                                        dialog.cancel();
++                                    }
++                                    return true;
++                                }
++                            });
++                }
++            }
++
++            if (sConfirmDialog == null) {
++                sConfirmDialog = new AlertDialog.Builder(context)
++                        .setTitle(titleResourceId)
++                        .setMessage(resourceId)
++                        .setPositiveButton(com.android.internal.R.string.yes,
++                                new DialogInterface.OnClickListener() {
++                            public void onClick(DialogInterface dialog, int which) {
++                                beginShutdownSequence(context);
++                            }
++                        })
++                        .setNegativeButton(com.android.internal.R.string.no, null)
++                        .create();
+             }
+-            sConfirmDialog = new AlertDialog.Builder(context)
+-                    .setTitle(mRebootSafeMode
+-                            ? com.android.internal.R.string.reboot_safemode_title
+-                            : showRebootOption
+-                                    ? com.android.internal.R.string.reboot_title
+-                                    : com.android.internal.R.string.power_off)
+-                    .setMessage(resourceId)
+-                    .setPositiveButton(com.android.internal.R.string.yes, new DialogInterface.OnClickListener() {
+-                        public void onClick(DialogInterface dialog, int which) {
+-                            beginShutdownSequence(context);
+-                        }
+-                    })
+-                    .setNegativeButton(com.android.internal.R.string.no, null)
+-                    .create();
+             closer.dialog = sConfirmDialog;
+             sConfirmDialog.setOnDismissListener(closer);
+             sConfirmDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
+@@ -194,6 +251,12 @@ public final class ShutdownThread extends Thread {
+         }
+     }
+ 
++    private static int getAdvancedReboot(Context context) {
++        int def = BuildInfo.getSlimBuildType().equals(BuildInfo.BUILD_TYPE_UNOFFICIAL) ? 1 : 0;
++        return Settings.Secure.getInt(context.getContentResolver(),
++                Settings.Secure.ADVANCED_REBOOT, def);
++    }
++
+     private static class CloseDialogReceiver extends BroadcastReceiver
+             implements DialogInterface.OnDismissListener {
+         private Context mContext;
+@@ -289,11 +352,15 @@ public final class ShutdownThread extends Thread {
+                 pd.setIndeterminate(false);
+             } else {
+                 // Factory reset path. Set the dialog message accordingly.
+-                pd.setTitle(context.getText(com.android.internal.R.string.reboot_to_reset_title));
++                pd.setTitle(context.getText(com.android.internal.R.string.reboot_title));
+                 pd.setMessage(context.getText(
+-                        com.android.internal.R.string.reboot_to_reset_message));
++                        com.android.internal.R.string.reboot_progress));
+                 pd.setIndeterminate(true);
+             }
++        } else if (mReboot) {
++            pd.setTitle(context.getText(com.android.internal.R.string.reboot_title));
++            pd.setMessage(context.getText(com.android.internal.R.string.reboot_progress));
++            pd.setIndeterminate(true);
+         } else {
+             pd.setTitle(context.getText(com.android.internal.R.string.power_off));
+             pd.setMessage(context.getText(com.android.internal.R.string.shutdown_progress));
+diff --git a/services/core/java/com/android/server/wm/WindowManagerService.java b/services/core/java/com/android/server/wm/WindowManagerService.java
+index e3fc9e7..4bb41fc 100644
+--- a/services/core/java/com/android/server/wm/WindowManagerService.java
++++ b/services/core/java/com/android/server/wm/WindowManagerService.java
+@@ -5679,6 +5679,12 @@ public class WindowManagerService extends IWindowManager.Stub
+         }
+     }
+ 
++    // Called by window manager policy. Not exposed externally.
++    @Override
++    public void reboot() {
++        ShutdownThread.reboot(mContext, null, true);
++    }
++
+     public void setCurrentUser(final int newUserId, final int[] currentProfileIds) {
+         synchronized (mWindowMap) {
+             mCurrentUserId = newUserId;
+-- 
+1.9.1
+
