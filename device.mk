@@ -25,13 +25,14 @@ PRODUCT_CHARACTERISTICS := tablet
 # Overlays
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
-# Device uses high-density artwork where available
-PRODUCT_AAPT_CONFIG := normal
+# Enable higher-res drawables while keeping mdpi as primary source
+PRODUCT_AAPT_CONFIG := xlarge
 PRODUCT_AAPT_PREF_CONFIG := mdpi
+PRODUCT_LOCALES += mdpi
 
 # Boot animation
-TARGET_SCREEN_HEIGHT := 1280
-TARGET_SCREEN_WIDTH := 800
+TARGET_SCREEN_HEIGHT := 800
+TARGET_SCREEN_WIDTH := 1280
 
 $(call inherit-product, frameworks/native/build/tablet-7in-xhdpi-2048-dalvik-heap.mk)
 
