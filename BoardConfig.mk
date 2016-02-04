@@ -62,8 +62,8 @@ TARGET_PROVIDES_GPS_LOC_API := true
 BOARD_HARDWARE_CLASS += device/samsung/matissewifi/cmhw
 
 # Graphics
-#TARGET_HAVE_NEW_GRALLOC := true
-#BOARD_USES_LEGACY_MMAP := true
+TARGET_HAVE_NEW_GRALLOC := true
+BOARD_USES_LEGACY_MMAP := true
 
 # Lights
 TARGET_PROVIDES_LIBLIGHT := true
