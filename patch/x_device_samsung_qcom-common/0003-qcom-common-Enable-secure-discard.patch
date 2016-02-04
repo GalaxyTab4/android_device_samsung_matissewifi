@@ -1,0 +1,27 @@
+From c250a0fd7c65aecff2075106e4bccf168d20b992 Mon Sep 17 00:00:00 2001
+From: Dan Pasanen <dan.pasanen@gmail.com>
+Date: Thu, 5 Nov 2015 22:49:18 -0800
+Subject: [PATCH 3/3] qcom-common: Enable secure discard
+
+* According to section "9.12. Data deletion" of the CDD,
+  using secure erase is now a requirement for all devices
+  running 6.0.
+
+Change-Id: I97c6309bc564356fa7eecb6bab2024c300f0d6d1
+Signed-off-by: Matt Filetto <matt.filetto@gmail.com>
+---
+ BoardConfigCommon.mk | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
+index b267055..36fc869 100644
+--- a/BoardConfigCommon.mk
++++ b/BoardConfigCommon.mk
+@@ -44,4 +44,3 @@ BOARD_USES_QCOM_HARDWARE := true
+ TARGET_RECOVERY_DEVICE_DIRS += device/samsung/qcom-common
+ TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
+ BOARD_HAS_DOWNLOAD_MODE := true
+-COMMON_GLOBAL_CFLAGS += -DNO_SECURE_DISCARD
+-- 
+1.9.1
+

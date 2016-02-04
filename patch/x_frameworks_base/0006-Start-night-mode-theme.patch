@@ -1,0 +1,151 @@
+From 7b7eb4441fb271bca02035a7b9f3914dd3545361 Mon Sep 17 00:00:00 2001
+From: Griffin Millender <griffinn.millender@gmail.com>
+Date: Mon, 11 Jan 2016 12:05:03 -0600
+Subject: [PATCH] Start night mode theme
+
+Change-Id: I84e7624e5cc44b83a6883a8b1bffefc434e20f84
+---
+ core/res/res/values-night/colors.xml          | 19 +++++++++
+ core/res/res/values-night/styles.xml          | 55 +++++++++++++++++++++++++++
+ packages/SystemUI/res/values-night/colors.xml | 41 ++++++++++++++++++++
+ 3 files changed, 115 insertions(+)
+ create mode 100644 core/res/res/values-night/colors.xml
+ create mode 100644 core/res/res/values-night/styles.xml
+ create mode 100644 packages/SystemUI/res/values-night/colors.xml
+
+diff --git a/core/res/res/values-night/colors.xml b/core/res/res/values-night/colors.xml
+new file mode 100644
+index 0000000..172f479
+--- /dev/null
++++ b/core/res/res/values-night/colors.xml
+@@ -0,0 +1,19 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 TeamTwisted
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++          http://www.apache.org/licenses/LICENSE-2.0
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<!-- DayNight theme  -->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++    <color name="background_floating_material_dark">@color/material_grey_800</color>
++
++</resources>
++
+diff --git a/core/res/res/values-night/styles.xml b/core/res/res/values-night/styles.xml
+new file mode 100644
+index 0000000..40060ed
+--- /dev/null
++++ b/core/res/res/values-night/styles.xml
+@@ -0,0 +1,55 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 TeamTwisted
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++          http://www.apache.org/licenses/LICENSE-2.0
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<!-- DayNight Theme -->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++
++	<!-- Dialog/Alert text colors -->
++    <style name="TextAppearance.Material.Large" parent="TextAppearance.Material.Large">
++          <item name="textColor">@color/primary_text_material_dark</item>
++          <item name="textSize">16sp</item>
++    </style>
++    <style name="TextAppearance.Material.Small" parent="TextAppearance.Material.Small">
++          <item name="textColor">@color/secondary_text_material_dark</item>
++          <item name="textSize">14sp</item>
++    </style>
++    
++    <style name="TextAppearance.Material.Notification">
++          <item name="textColor">@color/primary_text_material_dark</item>
++        <item name="textSize">@dimen/notification_text_size</item>
++    </style>
++
++	<!-- Notification text colors -->
++    <style name="TextAppearance.Material.Notification.Title">
++        <item name="textColor">@color/primary_text_material_dark</item>
++        <item name="textSize">@dimen/notification_title_text_size</item>
++    </style>
++
++    <style name="TextAppearance.Material.Notification.Line2">
++        <item name="textColor">@color/secondary_text_material_dark</item>
++        <item name="textSize">@dimen/notification_subtext_size</item>
++    </style>
++
++    <style name="TextAppearance.Material.Notification.Info">
++        <item name="textColor">@color/secondary_text_material_dark</item>
++        <item name="textSize">@dimen/notification_subtext_size</item>
++    </style>
++
++    <style name="TextAppearance.Material.Notification.Time">
++        <item name="textColor">@color/secondary_text_material_dark</item>
++        <item name="textSize">@dimen/notification_subtext_size</item>
++    </style>
++    <style name="TextAppearance.Material.Notification.Emphasis">
++        <item name="textColor">#FFFFFF</item>
++    </style>
++
++</resources>
+diff --git a/packages/SystemUI/res/values-night/colors.xml b/packages/SystemUI/res/values-night/colors.xml
+new file mode 100644
+index 0000000..f8d15dde
+--- /dev/null
++++ b/packages/SystemUI/res/values-night/colors.xml
+@@ -0,0 +1,41 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++/*
++ * Copyright 2010, The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++-->
++<resources>
++
++    <color name="system_primary_color">#ff1a1a1a</color>
++    <color name="system_secondary_color">#ff1a1a1a</color>
++
++    <!-- The "inside" of a notification, reached via longpress -->
++    <color name="notification_guts_bg_color">@color/system_secondary_color</color>
++    <color name="notification_guts_title_color">#FFFFFFFF</color>
++    <color name="notification_guts_text_color">#b2FFFFFF</color>
++    <color name="notification_guts_btn_color">#FFFFFFFF</color>
++
++    <!-- The color of the legacy notification background -->
++    <color name="notification_legacy_background_color">#ff262626</color>
++    <!-- The color of the material notification background -->
++    <color name="notification_material_background_color">#ff262626</color>
++    <!-- The color of the material notification background when dimmed -->
++    <color name="notification_material_background_dimmed_color">#ff262626</color>
++    <!-- The color of the material notification background when low priority -->
++    <color name="notification_material_background_low_priority_color">#ff262626</color>
++    <!-- The color of the material notification background for media notifications when no custom
++         color is specified -->
++    <color name="notification_material_background_media_default_color">#ff262626</color>
++</resources>
+-- 
+1.9.1
+

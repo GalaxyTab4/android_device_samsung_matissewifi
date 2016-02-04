@@ -1,0 +1,1936 @@
+From 3969165999b20a27ad83c34ba10b6eae5a459519 Mon Sep 17 00:00:00 2001
+From: fusionjack <dogfight60-fusionjack@yahoo.de>
+Date: Sun, 8 Feb 2015 03:59:17 +0100
+Subject: [PATCH 4/5] Base: Slim Global Menu (1/2)
+
+Forward port from SlimKat
+
+Change-Id: Ie95c64be88a8825e9370a9bc29be7865931a889a
+
+Conflicts:
+	core/java/android/provider/Settings.java
+	core/res/res/drawable/ic_audio_ring_notif.xml
+	core/res/res/drawable/ic_audio_ring_notif_mute.xml
+	core/res/res/drawable/ic_audio_ring_notif_vibrate.xml
+	core/res/res/values/slim_symbols.xml
+	policy/src/com/android/internal/policy/impl/GlobalActions.java
+---
+ core/java/android/provider/Settings.java           |    7 +
+ .../internal/util/slim/PolicyConstants.java        |   42 +
+ .../android/internal/util/slim/PolicyHelper.java   |  163 +++
+ core/res/res/drawable-hdpi/ic_lock_lock_alpha.png  |  Bin 789 -> 499 bytes
+ core/res/res/drawable-hdpi/ic_lock_screenshot.png  |  Bin 0 -> 1326 bytes
+ core/res/res/drawable-mdpi/ic_lock_lock_alpha.png  |  Bin 636 -> 370 bytes
+ core/res/res/drawable-mdpi/ic_lock_screenshot.png  |  Bin 0 -> 1176 bytes
+ core/res/res/drawable-xhdpi/ic_lock_lock_alpha.png |  Bin 954 -> 616 bytes
+ core/res/res/drawable-xhdpi/ic_lock_screenshot.png |  Bin 0 -> 1437 bytes
+ .../res/res/drawable-xxhdpi/ic_lock_lock_alpha.png |  Bin 1565 -> 15150 bytes
+ .../res/res/drawable-xxhdpi/ic_lock_screenshot.png |  Bin 0 -> 1024 bytes
+ core/res/res/drawable/ic_audio_ring_notif.xml      |    2 +-
+ core/res/res/drawable/ic_audio_ring_notif_mute.xml |    2 +-
+ .../res/drawable/ic_audio_ring_notif_vibrate.xml   |    2 +-
+ core/res/res/layout/global_actions_silent_mode.xml |    5 +-
+ core/res/res/values/slim_colors.xml                |   25 +
+ core/res/res/values/slim_symbols.xml               |   13 +
+ .../internal/policy/impl/GlobalActions.java        | 1236 ++++++++++++++++++++
+ 18 files changed, 1493 insertions(+), 4 deletions(-)
+ create mode 100644 core/java/com/android/internal/util/slim/PolicyConstants.java
+ create mode 100644 core/java/com/android/internal/util/slim/PolicyHelper.java
+ create mode 100644 core/res/res/drawable-hdpi/ic_lock_screenshot.png
+ create mode 100644 core/res/res/drawable-mdpi/ic_lock_screenshot.png
+ create mode 100644 core/res/res/drawable-xhdpi/ic_lock_screenshot.png
+ create mode 100644 core/res/res/drawable-xxhdpi/ic_lock_screenshot.png
+ create mode 100644 core/res/res/values/slim_colors.xml
+ create mode 100644 policy/src/com/android/internal/policy/impl/GlobalActions.java
+
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index 85cb066..028b69d 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -3296,6 +3296,13 @@ public final class Settings {
+         public static final String NAVIGATION_BAR_CONFIG = "navigation_bar_config";
+ 
+         /**
++         * Config for advanced power menu
++         *
++         * @hide
++         */
++        public static final String POWER_MENU_CONFIG = "power_menu_config";
++
++        /**
+          * Wether the navbar menu button is on the left/right/both
+          * @hide
+          */
+diff --git a/core/java/com/android/internal/util/slim/PolicyConstants.java b/core/java/com/android/internal/util/slim/PolicyConstants.java
+new file mode 100644
+index 0000000..2b386b8
+--- /dev/null
++++ b/core/java/com/android/internal/util/slim/PolicyConstants.java
+@@ -0,0 +1,42 @@
++/*
++* Copyright (C) 2013-2015 SlimRoms Project
++*
++* Licensed under the Apache License, Version 2.0 (the "License");
++* you may not use this file except in compliance with the License.
++* You may obtain a copy of the License at
++*
++* http://www.apache.org/licenses/LICENSE-2.0
++*
++* Unless required by applicable law or agreed to in writing, software
++* distributed under the License is distributed on an "AS IS" BASIS,
++* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++* See the License for the specific language governing permissions and
++* limitations under the License.
++*/
++
++package com.android.internal.util.slim;
++
++public class PolicyConstants {
++
++    public static final String ACTION_POWER_OFF  = "**poweroff**";
++    public static final String ACTION_REBOOT     = "**reboot**";
++    public static final String ACTION_SCREENSHOT = "**screenshot**";
++    public static final String ACTION_AIRPLANE   = "**airplane**";
++    public static final String ACTION_SOUND      = "**sound**";
++    public static final String ACTION_USERS      = "**users**";
++    public static final String ACTION_LOCKDOWN   = "**lockdown**";
++
++    public static final String ACTION_DELIMITER  = "|";
++    public static final String ICON_EMPTY = "empty";
++    public static final String SYSTEM_ICON_IDENTIFIER = "system_shortcut=";
++
++    public static final String POWER_MENU_CONFIG_DEFAULT =
++          ACTION_POWER_OFF + ACTION_DELIMITER
++        + ICON_EMPTY       + ACTION_DELIMITER
++        + ACTION_REBOOT    + ACTION_DELIMITER
++        + ICON_EMPTY       + ACTION_DELIMITER
++        + ACTION_AIRPLANE  + ACTION_DELIMITER
++        + ICON_EMPTY       + ACTION_DELIMITER
++        + ACTION_SOUND     + ACTION_DELIMITER
++        + ICON_EMPTY       + ACTION_DELIMITER;
++}
+diff --git a/core/java/com/android/internal/util/slim/PolicyHelper.java b/core/java/com/android/internal/util/slim/PolicyHelper.java
+new file mode 100644
+index 0000000..fabfcfc
+--- /dev/null
++++ b/core/java/com/android/internal/util/slim/PolicyHelper.java
+@@ -0,0 +1,163 @@
++/*
++* Copyright (C) 2013-2015 SlimRoms Project
++*
++* Licensed under the Apache License, Version 2.0 (the "License");
++* you may not use this file except in compliance with the License.
++* You may obtain a copy of the License at
++*
++* http://www.apache.org/licenses/LICENSE-2.0
++*
++* Unless required by applicable law or agreed to in writing, software
++* distributed under the License is distributed on an "AS IS" BASIS,
++* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++* See the License for the specific language governing permissions and
++* limitations under the License.
++*/
++
++package com.android.internal.util.slim;
++
++import android.content.ContentResolver;
++import android.content.Context;
++import android.content.Intent;
++import android.content.pm.PackageManager;
++import android.content.pm.PackageManager.NameNotFoundException;
++import android.content.res.Resources;
++import android.graphics.drawable.BitmapDrawable;
++import android.graphics.drawable.Drawable;
++import android.net.Uri;
++import android.os.UserHandle;
++import android.provider.Settings;
++import android.util.Log;
++
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.net.URISyntaxException;
++import java.util.ArrayList;
++
++public class PolicyHelper {
++
++    private static final String SYSTEMUI_METADATA_NAME = "com.android.systemui";
++
++    public static ArrayList<ActionConfig> getPowerMenuConfigWithDescription(
++            Context context, String values, String entries) {
++        String config = Settings.System.getStringForUser(
++                    context.getContentResolver(),
++                    Settings.System.POWER_MENU_CONFIG,
++                    UserHandle.USER_CURRENT);
++        if (config == null) {
++            config = PolicyConstants.POWER_MENU_CONFIG_DEFAULT;
++        }
++        return ConfigSplitHelper.getActionConfigValues(context, config, values, entries, true);
++    }
++
++    public static void setPowerMenuConfig(Context context,
++            ArrayList<ActionConfig> actionConfig, boolean reset) {
++        String config;
++        if (reset) {
++            config = PolicyConstants.POWER_MENU_CONFIG_DEFAULT;
++        } else {
++            config = ConfigSplitHelper.setActionConfig(actionConfig, true);
++        }
++        Settings.System.putString(context.getContentResolver(),
++                    Settings.System.POWER_MENU_CONFIG,
++                    config);
++    }
++
++    public static Drawable getPowerMenuIconImage(Context context,
++            String clickAction, String customIcon, boolean enabled) {
++        int resId = -1;
++        Drawable d = null;
++        PackageManager pm = context.getPackageManager();
++        if (pm == null) {
++            return null;
++        }
++
++        int color = context.getResources().getColor(
++                com.android.internal.R.color.global_menu_icon);
++        if (enabled) {
++            color = context.getResources().getColor(
++                    com.android.internal.R.color.global_menu_icon_enabled);
++        }
++
++        Resources systemUiResources;
++        try {
++            systemUiResources = pm.getResourcesForApplication(SYSTEMUI_METADATA_NAME);
++        } catch (Exception e) {
++            Log.e("ButtonsHelper:", "can't access systemui resources",e);
++            return null;
++        }
++
++        if (!clickAction.startsWith("**")) {
++            try {
++                String extraIconPath = clickAction.replaceAll(".*?hasExtraIcon=", "");
++                if (extraIconPath != null && !extraIconPath.isEmpty()) {
++                    File f = new File(Uri.parse(extraIconPath).getPath());
++                    if (f.exists()) {
++                        d = new BitmapDrawable(context.getResources(),
++                                f.getAbsolutePath());
++                    }
++                }
++                if (d == null) {
++                    d = pm.getActivityIcon(Intent.parseUri(clickAction, 0));
++                }
++            } catch (NameNotFoundException e) {
++                resId = systemUiResources.getIdentifier(
++                    SYSTEMUI_METADATA_NAME + ":drawable/ic_sysbar_null", null, null);
++                if (resId > 0) {
++                    d = systemUiResources.getDrawable(resId);
++                }
++            } catch (URISyntaxException e) {
++                e.printStackTrace();
++            }
++        }
++
++        if (customIcon != null && customIcon.startsWith(ActionConstants.SYSTEM_ICON_IDENTIFIER)) {
++            resId = systemUiResources.getIdentifier(customIcon.substring(
++                        ActionConstants.SYSTEM_ICON_IDENTIFIER.length()), "drawable", "android");
++            if (resId > 0) {
++                d = systemUiResources.getDrawable(resId);
++                if (d != null) {
++                    d = ImageHelper.getColoredDrawable(d, color);
++                }
++            }
++        } else if (customIcon != null && !customIcon.equals(ActionConstants.ICON_EMPTY)) {
++            File f = new File(Uri.parse(customIcon).getPath());
++            if (f.exists()) {
++                d = new BitmapDrawable(context.getResources(),
++                    ImageHelper.getRoundedCornerBitmap(
++                        new BitmapDrawable(context.getResources(),
++                        f.getAbsolutePath()).getBitmap()));
++            } else {
++                Log.e("ActionHelper:", "can't access custom icon image");
++                return null;
++            }
++        } else if (clickAction.startsWith("**")) {
++            d = getPowerMenuSystemIcon(context, clickAction);
++            if (d != null) {
++                d = ImageHelper.getColoredDrawable(d, color);
++            }
++        }
++        return d;
++    }
++
++    private static Drawable getPowerMenuSystemIcon(Context context, String clickAction) {
++        if (clickAction.equals(PolicyConstants.ACTION_POWER_OFF)) {
++            return context.getResources().getDrawable(
++                com.android.internal.R.drawable.ic_lock_power_off_alpha);
++        } else if (clickAction.equals(PolicyConstants.ACTION_REBOOT)) {
++            return context.getResources().getDrawable(
++                com.android.internal.R.drawable.ic_lock_reboot_alpha);
++        } else if (clickAction.equals(PolicyConstants.ACTION_SCREENSHOT)) {
++            return context.getResources().getDrawable(
++                com.android.internal.R.drawable.ic_lock_screenshot);
++        } else if (clickAction.equals(PolicyConstants.ACTION_AIRPLANE)) {
++            return context.getResources().getDrawable(
++                com.android.internal.R.drawable.ic_lock_airplane_mode_off_am_alpha);
++        } else if (clickAction.equals(PolicyConstants.ACTION_LOCKDOWN)) {
++            return context.getResources().getDrawable(
++                com.android.internal.R.drawable.ic_lock_lock_alpha);
++        }
++        return null;
++    }
++
++}
+diff --git a/core/res/res/drawable-hdpi/ic_lock_lock_alpha.png b/core/res/res/drawable-hdpi/ic_lock_lock_alpha.png
+index 6d1029ce9384e24b56d7d062ba4db4e0a61cef96..39534743b75a3da3f494ef54fb1e09a99652f28c 100644
+GIT binary patch
+delta 484
+zcmV<A0UQ362J-`u8Gi-<00374`G)`i010qNS#tmY4#WTe4#WYKD-Ig~00E^*L_t(&
+zf$f()F9cB(hTpr0AR8K;kN5|4+NF_DDA4&QDvckZP-&GC1quGZibkQ*h>t>$i1>IE
+zLn6n{nwvYbv&(&wDbD1aJMTO9+?ji&NF)-8{AXMdg924alYf#%Bvm9`Nvb>NZi{$c
+zZUD2uF7U!n-ho44p=_N$0Q!OL2BOp02Kvg@ElC0#u;(HEiyfel7WOr;k|MAUYyw-r
+zSxU}o+4@D&*WbAZ=1q<RmVgJ7ds>$6FJVI@i}O2+P4br;%)(eJHCsV7Bj%)8Ujr53
+z+SCMnl`0{{l7A*lyziVNE!jEuF6rFd9t{x?YGByJ7a3|UO*|MPAk;wB#7`M&ZcN-8
+zA|TX&{TXE$@6N>CAp-I?(3PR)-o!m20zwVg{(a6+^JwCM5CLA(2h=3ZDA~n!Nt!k(
+zbHMm7!%UgD25d-rlk}?OOLpv|D>J})%9bEc)_gSiwp~#9n=eD?8YrE1G~hMM?P$P@
+zXrKT(zJ)s8fEVp(AoV=ah-jc}qJaX4Ez}IJx6=xI&!Y!Q4jw3fGw$;`%6Z&KBoc}I
+aVLkwrj_&bkG#DcQ0000<MNUMnLSTZod)Uta
+
+literal 789
+zcmeAS@N?(olHy`uVBq!ia0vp^1|ZDA0wn)(8}a}trX+877l!}s{b%+Ad7K3vk;OpT
+z1B~5HX4`=T%L*LRfizez!?|}o;XrM&o-U3d5r^Mi+nXosDAM*Yy*^2L3Lj_Zsh1lv
+zRyw(>WN|e)Ow@1)aD3j>)W!Wlw535nHQ>U+0>+gKTo#0coX{{4kbF~7u346B*;Ri{
+zt>f5zFYUK)W_~_5$FevrB4gqH(12qrD({#zU-M*OJE!dV?%Rv&CMQH39@<Sg*^+hc
+z!S4G(jSg0_f>Vm-TfN=(S})?*zW%tXWy*8<X7F{WgxOx5z?s64!ZiQRM&(I9ZY`>J
+z*5AB#L3<ASi7zHO(UUvW*e&M?9XMhcJ?(2q&F5R`bIQ*~+MeDP^J(jh>oE-hkM@bi
+zhQ7aZN$=SI8{FX~Ybzd1G~mB{Mp4M)${m-h>v(fFdZ=96mKZK-enn++Sdmdf+b)sW
+z-$K50FHbtJ7F5dnk1ar)`$OYG2NhRug|PYZ45kxqxw~ompWw0oY#R`9hS%asK%_=+
+zV;cLJwSt+q&K#VWks*CFB5PT5Vkx_=vW}^9XUUZ}ZVXWqyk=`weJXkTU_mIuEJdrJ
+z!o<Q0QoDuS*3=tMi7LISA1l6A`STI+sSAtl2A797gx_0j^|V*^;X?tna}Fw{H=X|;
+zynkTtM#s4A>-4`J?(@)eXyf~3l(>=WZ}L|)jbCa(oe|4lL^4g#SN?e6{zp@7A<mw&
+z$Lr@U<37N&f#J{m&j}upp8CZMO$*B{dpF9mzgTSk(y7#?Gh)Au!olKv@7?Vlvu9S#
+znc^lpv+}pj$9A3l=DJ%hoP5o1GG(4deX&q8Fx9A*xJHzuB$lLFB^RXvDF!10LqlBy
+z6J0~Y5CcmqLnA9wOI-tVD+7bd_dhLBH00)|WTsW(*1)mJu@$I65@bVgep*R+Vo@rC
+jV@iHfs)A>3VtQ&&YGO)d;mK4RpdtoOS3j3^P6<r_9O6C+
+
+diff --git a/core/res/res/drawable-hdpi/ic_lock_screenshot.png b/core/res/res/drawable-hdpi/ic_lock_screenshot.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..5ef76f77333551445c5fed8a3c4e95d81a11027b
+GIT binary patch
+literal 1326
+zcmV+}1=0G6P)<h;3K|Lk000e1NJLTq001xm001xu1ONa4{R=S+00009a7bBm000XT
+z000XT0n*)m`~Uz07->U8P*7-ZbZ>KLZ*U+<Lqi~Na&Km7Y-Iodc-muNV4mRU;^fLC
+zz`#&YR8r&~<QN$d8KuB}o`H>lnSp_Ufq@}0xwybFAi#%#fq@|}KQEO56)-X|e7nZL
+z$iTqBa9P*U#mSX{G{Bl%P*lRez;J+pfx##xwK$o9f#C}S14DXwNkIt%17i#W1A|CX
+zc0maP17iUL1A|C*NRTrF17iyV0~1e4YDEbH0|SF|enDkXW_m`6f}y3QrGjHhep0GJ
+zaAk2xYHqQDXI^rCQ9*uDVo7QW0|Nup4h9AW240u^5(W3f%sd4n162kpgNVo|1qcff
+zJ_s=cNG>fZg9jx8g8+j9g8_pBLjXe}Lp{R+hNBE`7{wV~7)u#fFy3PlV+vxLz;uCG
+zm^qSpA@ds+OO_6nTdaDlt*rOhEZL^9ePa)2-_4=K(Z%tFGm-NGmm}8}ZcXk5JW@PU
+zd4+f<@d@)y<Co!IETAK>L(o<5icqT158+-B6_LH7;i6x}CW#w~Uy-Pgl#@Irl`kzV
+zeL|*8R$ca%T%Wv){2zs_iiJvgN^h0dsuZZ2sQy$tsNSU!s;Q*;LF<6_B%M@UD?LHI
+zSNcZ`78uqV#TeU~$eS{ozBIdFzSClf<pirb>s*^S+dw;4dus<{M;#|MXC)T}S9v!D
+zcV!QCPhBq)ZyO(X-(bH4|NMaZz==UigLj2o41F2S6d@OB6%`R(5i>J(Puzn9wnW{e
+zu;hl6HK{k#IWjCVGqdJqU(99Cv(K+6*i`tgSi2;vbXD1#3jNBGs$DgVwO(~o>mN4i
+zHPtkqZIx>)Y(Ls5-Br|mx>vQYvH$Kwn@O`L|D75??eGkZnf<fA&q<hjdcOIBrHe!s
+zw=Vg%EOYt2l_9H6uW?zsZ@uM)ZJSIsZ`o?HZTk+Zo%?sY?m4?JZ2yCUIfs58X+I`@
+ze8oxYQ|HbkpZ#@y(nak{N3SGa{daxNO`BVH@6_K@zJKCj-ea*R`=4dL5P5m<b^crV
+zcNac1eKP(0>g$5<;Xeg_o%+-I&+-3%01W^SH2RkDT>t<8AY({UO#lFTB>(_`g8%^e
+z{{R4h=>PzAFaQARU;qF*m;eA5Z<1fdMgRZ-kV!;ARCwC#m%(v^Fc3wbGQLM8s05_~
+z(}A4|Ob2lXp@TRT5Le*1g3y7T3QQ_6sbF)k!hj<g2ykP$AZcg6^x6F@lrXN{F#${f
+z6Ts*Iv-(g4+$6?$rr%WV^$r7o7~*n}sm#5th&+)p@{T6}49~R?!%|dQ&O2N3k{aXn
+zT1n)cPb#F#)i)5!iY*08<}ClYZFTDe1z)7tk+MkEyxj0UlJO19vFMfvQhyQ&St6#M
+zxN-{mRwA|oIEjZc(Xwj>n6)@$!GkJ5G%*WD)m~+);8D^_)%=?x>nJ(bX5F`vLtlzg
+z7hVD@QC|Q9qOW%UYjNNVm55DhdQ>?O2a@s$fPEjizKGc(uxgw2stMq8?1pncHh^_`
+ze~Uod2Ots+yarac0L=UK<Ta?Ajd%YW5Yr&)jdgGq4IrsspS*h1QS5eZE6cK^PLep-
+zco;QJMOQ8bRmmPmu0;;l-B(OdtUJr~B^5v9$lg`0?a;4VceF0nLF|TZ`u#6je{L|-
+kU*-fb0gMkYdZGOc094TUYNYO~J^%m!07*qoM6N<$g25s{p8x;=
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable-mdpi/ic_lock_lock_alpha.png b/core/res/res/drawable-mdpi/ic_lock_lock_alpha.png
+index 5ff3654d317252ce95b4d62b168cf9893dfe9487..c43653d8d40f90320c1b2d6f46b4fe0c6df08952 100644
+GIT binary patch
+delta 354
+zcmV-o0iFK*1o8rq8Gi-<0047(dh`GQ010qNS#tmY4#WTe4#WYKD-Ig~00AUPL_t(o
+zh3%F*N(4a=hQFE>R&Zs7#YhA*vrP;{@DL)1Yvf5hg~w1lf|=+M1T!@dOccZi?Cx*U
+zqYcjX^sKf9_Lp=`Rae#Dj~NCsnLoy+O_bCFR)H39WoCCjrhlrY@rI;RedS!zX6oj9
+zl13HHONNrRo79Xx0!ba<23T;eGvEj)fL&nS`5%B4Gka_zBu2oFx6)%tg%@i{I`QKB
+zv2~03DIctP_JNs=%Lg+X0f%0^pF+Tr8()FTiuko>FQyPM@5UE1Q$_sVv)d^I%+};Q
+z0j02+*rLISl3UC*G@$F;Z;~eEJp*$<S5g}o0^<ogR*$4X;GK_UE7YUO5hUR^1Oz{J
+zc?bT5fFM~w77)Cll9u`W)0vhFGrRp}jZ7vT?@3SEKSH*V&Hw-a07*qoM6N<$f=>~d
+AbpQYW
+
+literal 636
+zcmeAS@N?(olHy`uVBq!ia0vp^3LwnE0wix1Z>k4UOiAAEE)4(M`_JqL@;D1TB8!2v
+z2N=7Z%(epwmK8Xr18D^?ZvQoBE&~H&i>HfYh{y4}S2yNe4iI5`@cx!xRA+|^kAb4$
+zb51RZNF$NXx$F-ZjTAPPuL-&K#ZVx~TrF-v@HD?fCytfgft@+VH@3<gH-C8`s4wND
+z)$<?w|JVOpoGn+=^6yK{=BPt2YZ+(t3s=td5;dHlb4Vxf6tB%e{cOiYFY@15+iUd9
+z-LYj$$;%@ViY9Nq8E|-=kDZ~VQt@W-_Ovi3)fDw+E3svHx-!<=3bL~<-rsRnVQO_|
+z8^4|B$D@~K&J5q@Is2fSB#X?$Q<g%U=VGtk)V=;o)#mW2-h^D;9UBi_wiSvxU0m*$
+z(RM3j)w;`e4O*7^p|itn%Y*Zc?uNcHl92fQQh>RiXDY`(i3b9ce{L;pX$*O{_58Zt
+zf+y9h%??$+@7Y^;@!O*8#{p?du4$K6%AQ!#7Rb3^#nkqw;@fw!l#b>#oNB(XC;!@^
+zGP7-`zW4oSSYUnR?BC1LcR4SVC0bX-ykL6rL${aViQC=Z3a@MaT<w1Kt=q%n&kF1R
+zp<B+adf!~TPvl6Q5x>blCLfRZmHW3GXah!!YKdz^NlIc#s#S7PDv)9@GB7mMH89aN
+zGz>AYv@$fZGPTq-Ft;)=sC@s^5=BF9eoAIqC2kEIn;ct#8YDqB1m~xflqVLYGB~E>
+hC#5QQ<|d}62BjvZR2H60wE-$(@O1TaS?83{1OQG10{;L2
+
+diff --git a/core/res/res/drawable-mdpi/ic_lock_screenshot.png b/core/res/res/drawable-mdpi/ic_lock_screenshot.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..9996e726df3c853cc969d73baf66d44dcbe56ab1
+GIT binary patch
+literal 1176
+zcmV;J1ZVq+P)<h;3K|Lk000e1NJLTq001BW001Be1ONa4*>kdg00009a7bBm000XT
+z000XT0n*)m`~Uz07->U8P*7-ZbZ>KLZ*U+<Lqi~Na&Km7Y-Iodc-muNV4mRU;^fLC
+zz`#&YR8r&~<QN$d8KuB}o`H>lnSp_Ufq@}0xwybFAi#%#fq@|}KQEO56)-X|e7nZL
+z$iTqBa9P*U#mSX{G{Bl%P*lRez;J+pfx##xwK$o9f#C}S14DXwNkIt%17i#W1A|CX
+zc0maP17iUL1A|C*NRTrF17iyV0~1e4YDEbH0|SF|enDkXW_m`6f}y3QrGjHhep0GJ
+zaAk2xYHqQDXI^rCQ9*uDVo7QW0|Nup4h9AW240u^5(W3f%sd4n162kpgNVo|1qcff
+zJ_s=cNG>fZg9jx8g8+j9g8_pBLjXe}Lp{R+hNBE`7{wV~7)u#fFy3PlV+vxLz;uCG
+zm^qSpA@ds+OO_6nTdaDlt*rOhEZL^9ePa)2-_4=K(Z%tFGm-NGmm}8}ZcXk5JW@PU
+zd4+f<@d@)y<Co!IETAK>L(o<5icqT158+-B6_LH7;i6x}CW#w~Uy-Pgl#@Irl`kzV
+zeL|*8R$ca%T%Wv){2zs_iiJvgN^h0dsuZZ2sQy$tsNSU!s;Q*;LF<6_B%M@UD?LHI
+zSNcZ`78uqV#TeU~$eS{ozBIdFzSClf<pirb>s*^S+dw;4dus<{M;#|MXC)T}S9v!D
+zcV!QCPhBq)ZyO(X-(bH4|NMaZz==UigLj2o41F2S6d@OB6%`R(5i>J(Puzn9wnW{e
+zu;hl6HK{k#IWjCVGqdJqU(99Cv(K+6*i`tgSi2;vbXD1#3jNBGs$DgVwO(~o>mN4i
+zHPtkqZIx>)Y(Ls5-Br|mx>vQYvH$Kwn@O`L|D75??eGkZnf<fA&q<hjdcOIBrHe!s
+zw=Vg%EOYt2l_9H6uW?zsZ@uM)ZJSIsZ`o?HZTk+Zo%?sY?m4?JZ2yCUIfs58X+I`@
+ze8oxYQ|HbkpZ#@y(nak{N3SGa{daxNO`BVH@6_K@zJKCj-ea*R`=4dL5P5m<b^crV
+zcNac1eKP(0>g$5<;Xeg_o%+-I&+-3%01W^SH2RkDT>t<8AY({UO#lFTB>(_`g8%^e
+z{{R4h=>PzAFaQARU;qF*m;eA5Z<1fdMgRZ+`bk7VRCwC#l-*GSAryr_91EZW=|DON
+zc3=sVkPh4qVh3vns}*dlz!DNGARQcE)?~Bb444PUnH*l=0v|v3fDxDJhAZIj0k^Zd
+zBLc8DFQCA9HuAx2=S>v>PXIjsb_WMuc?VW1xocbmO%4daruh<dDogDY<v?C*?Xuo!
+z*3W<*Kwd!(WYxC;29Q6lJIaH`dO(tuQ_3RMfF80fcc70PP<G<yl#{tuz*~!z?ImyF
+z4%jYYd*Hs-2T4}p>;{sYY)cwDP(0=#=@B%v87YFSqB=!c(7M%$(jY$_Gb~J03HWwl
+qS<@_|{Ew(p;W?Y@xBg!NUjqP|lmDb@MVw>+0000<MNUMnLSTYSE%ajm
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable-xhdpi/ic_lock_lock_alpha.png b/core/res/res/drawable-xhdpi/ic_lock_lock_alpha.png
+index 086a0ca0aac4ed2493d0605bd7456dc3d8027b94..4208befe3d21eeb0bdcfa7b4fc62f6bc0020f024 100644
+GIT binary patch
+delta 602
+zcmV-g0;T=B2j~Ql8Gi-<0063Kaozv`010qNS#tmY4#WTe4#WYKD-Ig~00J6GL_t(|
+zob8xBYZOr!h0jeklEe?t_*sY$EVQu`Y-~cnQt<cKr}ig^t%99`ij86sK`aEp!p24u
+zHX#OsA?uSO2vP2x&7C_lZ+7!Ou+7=I@0@d(Z^>~S$8j9Taes~^q3az2(~@pVx+dwY
+zq@JWTNna!_hY<Q*dukmZ0E@sAV2d;Z;5Bd$n6UQU2*5n>sv>lXx4>0v|3v@`z($Sm
+ze^~==S?8z)aGmPI{h;)LdFwpc0MCa6TL<0)AArpv+r9)kzhKt}xKR=2BX9?p+_(J{
+za2NPgvF^5IrhhDer9_Aqz)Z!u8Q@uB?ZYlJ6ag$p0{j5Z9ANEfU?sBtYZu;&0eZl8
+zB*6WQ84nUi!KtSGw(+oWS<+NQf0{Alb3(t8Z>O3z3b+)}c9aek<6A;Mmv5(<HVT-F
+zXsaQFos1dZ6Z**-eky6BfD;jID|5z5LO+%{XDDqHkbk_*Ww4&mdkxI~hc*hBj%c~Y
+zHxl|t6fhgnCL>ys5W+yxugG5`aSFul)xT@Z`5DoU*O*gD@gc?DOUlH)-}%U9eIR#V
+zo02a4r(FbQwRc<nBWVyqAaibW0FM(-Y+drGBtz*ba2P&Y6}=`Oh5)8`0oDer8HWP=
+z8c>24U{h_tnsF$=uK^{DLjisSl;8ze8?eR;ur^?g7hr9`8ZW@wfHg<HfYQ(6ZzOFu
+oVWfa}#`||1$8j9Tahy?P7s<o-tlQFK9{>OV07*qoM6N<$g3Kfh0RR91
+
+literal 954
+zcmeAS@N?(olHy`uVBq!ia0vp^4j|0I0wfs{c7_5;rX+877l!}s{b%+Ad7K3vk;OpT
+z1B~5HX4`=T%L*LRfwTh{zxw<m0jTYer;B4q#=W;U?ECMyNF4uo{>HuC1??G%e>8&v
+zTEizy_9!&nW!AMqfS1+dge`~5M2#qctEDC%*aT8rT$ot2thB5+c6Ln;;1bwqEAs8_
+z+qb#b9zR{Q_=EqatX%u^#_{&X^D1q6q)fA}SZec>Yx+)A->d91b(z0Z!nJ~BnX^k@
+zoigZPWO#aUz7MmRNZf(<TL0(lFlJaJF=w-n^7iMZ;d@p%Jl$8l@6*y>5)aQ92gsT4
+ze{H*7&v55!=XiO=CC?P(uhgvj*mpiQsC&_@oB1UtOY46H>J=U3_ng>X;<)VFx_;NG
+zG0N{h6kjo#dS`jje4dvbB@HoeS4m4fX}Y6d_f0yk=;rAYt`~XjcPfW3Z}pX8PR*9Q
+zvvu(_&VQfw>C2R`iSK>K?B6N1^L=b?{K+YW6I7Sm-`c9owW$5uouY(A0W&NLPS0z<
+zdslXMQr43ahIO4%DS5lrPN-ZGRH+iY<Lxq@-WO3-PfRv1*z{1;af;;@{ow2w+cNX6
+z82#o;UG!iRZ)nu_WlRMZH{ZRvo$vYY3a-G%7s}@zEuJ^sV&5gkZMJJ;%ie7d?`yyD
+z<;1h==aOz;yU8>o=uF(r{nOd_@5*Y3tTax1rEtae_D5m;W}fb8>D(V&O5QPOFMG7^
+z6K6o%&p3T%r=1!0_Igf|yR-{SmtNT~=5pok#Z`jSzZ9k9ajx1O`e}a(L+;hfdM>v&
+z%jDder0c-qm|R@8Eq8VFguYcvO&PeRt~3wfN-;A$7=5p%=lBxqc^`Y(rXEVa7q;Ts
+z*#oT6-m_+YsbCd<rnDwR-a&cQQ$Ii3{_6AMxmlI*nV0N2nhUb-dCyF7etvs#@qBi-
+z2Ehat2}UsG!Pwz!XVUiTD<ezF>zwqg?|jwW)Ax0)2wEAmeUsnHxX`|D%vXM#*jIIy
+zN8stdgsb9C8!ydems@l5N752ghKOwAYLCy0-Fl_I+F#f|^UFbjg;plgz+|mj;u=ws
+zl30>zm0Xkxq!^403=MS+OmqzmLkujf42`TzEp-jdtqcq*-~Y5k(U6;;l9^VCTLZ@?
+z$5x;QNstY}`DrEPiAAXljw$&`sS2LCiRr09sfj6-g(p*OfQlGAUHx3vIVCg!0Ci@T
+A%>V!Z
+
+diff --git a/core/res/res/drawable-xhdpi/ic_lock_screenshot.png b/core/res/res/drawable-xhdpi/ic_lock_screenshot.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7e4c0ee129b1fc34cc3178da27427109074b35cc
+GIT binary patch
+literal 1437
+zcmV;O1!DS%P)<h;3K|Lk000e1NJLTq002M$002M;1ONa40ARUQ00009a7bBm000XT
+z000XT0n*)m`~Uz07->U8P*7-ZbZ>KLZ*U+<Lqi~Na&Km7Y-Iodc-muNV4mRU;^fLC
+zz`#&YR8r&~<QN$d8KuB}o`H>lnSp_Ufq@}0xwybFAi#%#fq@|}KQEO56)-X|e7nZL
+z$iTqBa9P*U#mSX{G{Bl%P*lRez;J+pfx##xwK$o9f#C}S14DXwNkIt%17i#W1A|CX
+zc0maP17iUL1A|C*NRTrF17iyV0~1e4YDEbH0|SF|enDkXW_m`6f}y3QrGjHhep0GJ
+zaAk2xYHqQDXI^rCQ9*uDVo7QW0|Nup4h9AW240u^5(W3f%sd4n162kpgNVo|1qcff
+zJ_s=cNG>fZg9jx8g8+j9g8_pBLjXe}Lp{R+hNBE`7{wV~7)u#fFy3PlV+vxLz;uCG
+zm^qSpA@ds+OO_6nTdaDlt*rOhEZL^9ePa)2-_4=K(Z%tFGm-NGmm}8}ZcXk5JW@PU
+zd4+f<@d@)y<Co!IETAK>L(o<5icqT158+-B6_LH7;i6x}CW#w~Uy-Pgl#@Irl`kzV
+zeL|*8R$ca%T%Wv){2zs_iiJvgN^h0dsuZZ2sQy$tsNSU!s;Q*;LF<6_B%M@UD?LHI
+zSNcZ`78uqV#TeU~$eS{ozBIdFzSClf<pirb>s*^S+dw;4dus<{M;#|MXC)T}S9v!D
+zcV!QCPhBq)ZyO(X-(bH4|NMaZz==UigLj2o41F2S6d@OB6%`R(5i>J(Puzn9wnW{e
+zu;hl6HK{k#IWjCVGqdJqU(99Cv(K+6*i`tgSi2;vbXD1#3jNBGs$DgVwO(~o>mN4i
+zHPtkqZIx>)Y(Ls5-Br|mx>vQYvH$Kwn@O`L|D75??eGkZnf<fA&q<hjdcOIBrHe!s
+zw=Vg%EOYt2l_9H6uW?zsZ@uM)ZJSIsZ`o?HZTk+Zo%?sY?m4?JZ2yCUIfs58X+I`@
+ze8oxYQ|HbkpZ#@y(nak{N3SGa{daxNO`BVH@6_K@zJKCj-ea*R`=4dL5P5m<b^crV
+zcNac1eKP(0>g$5<;Xeg_o%+-I&+-3%01W^SH2RkDT>t<8AY({UO#lFTB>(_`g8%^e
+z{{R4h=>PzAFaQARU;qF*m;eA5Z<1fdMgRZ-|4BqaRCwC#SnYL!FciJ%aR5e0CulY(
+z8^{Kw8`ud-C$Jl6C$LUnJApcZZU7tH{xE<bBv_NSr{?h^#}LT%ecX46Ab!_w5C8-K
+z0YCt7?EnO?9l+nr0b#t5frcx#Jl(QUH!dnn8xv1r<HrL%01zQ={l?D%IJS2zvGJA!
+zU10<mlO)$n83B}>a6vcL-m3?I<b+a>Yr3@7UY$H308k>q1C)E_8IS{<BKENL8B92Y
+z9yfTyMtlGOBPfiKK%Vb`ZZ@&mnsF!Yl(~~6w7eoS)Kp}xmLW-K48fzA*V{osp}_tS
+z3OzeR>MsP7>baP!#+@0f3^01(q7ba=I_bEZGpz!#^8-MZPVQZiR_W*gz)Zh9F*rD{
+zK<<VCI7g5y^*A-GiSS&tu<tjc9_aS}f3OI3J9FrPvLV|kS^>auVY<<Tg&yy$D`UT+
+z)Uh@?AAnsO?fn2KW4|2+k<xh;P-&Jk+s;Bo7w|v=0HVOFan*|+$L>9l>k5wyDsiFT
+zD*g0=to&^0fv}>kkyfX4C`eS*?`9|d$&QqfH$hV1RurY1k?2Sl_{6-LS6KVhggY9^
+zn2ALfI?#l9t&2_+;q)g&>A?>v8>CFhY=9<qAWEB@x5pO1JtT%QpK$eI;^@;X9Mg>k
+r)oM7X3?2xl<pDqd5CHsV0AB+Dq2?Q5zRFx300000NkvXXu0mjfkBo2I
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable-xxhdpi/ic_lock_lock_alpha.png b/core/res/res/drawable-xxhdpi/ic_lock_lock_alpha.png
+index 1b8882c7a81fd5c14750c033e7330e4bee500874..a6b578e55b150f79265da1ad11cded172db149a0 100644
+GIT binary patch
+literal 15150
+zcmeI3TZkJ~7{^bo)ox1bYLR+*a7ewhtjS!GNix$U-E1!If~o6v%WhF<XJ<}!hbA-Q
+z%<Lw+N?TMYB3dgxR4pp_C`gf_NU5y_r6_10EMk373L;9O4}#WeS<mEpa_d>7k0+4K
+zmvjE#|D5xibD5WUX?(|H>wWk6008U9Ml%!Wy4U-zy$$_dI$DmQ%YZey+W}zRM(?`{
+zymjmz0Hk;H$!T{w|G2E0rJ$mjGcZ^wSx5~)e0#-G)P2xpX5g%DB>Y!Sp7t}kmhexB
+zc`k3I;ha9YWW$|HJ0{hoeX6ASw<mq^ii`|O&{dd9sc1NICE>67$|&}VSwB;ixcd_R
+zl-D3LogZh?rVSY}7zwBxA7-LbkQXCSDf%cQp#LlvV+Ah2NwOG{If1Ev{7D~*;<i?h
+zCo;KubLd~fKj*rZ%(CTjIam$_O?#H*B}rmAffa-RQUshu!&NE)!`WOjY4~KIquRRV
+z>ZZYXzRHX_?<V|yuc79rKCY6L&o`SgoH{+kk*z2e%Lh5ORAPH&I_?B)b+TusGr4F%
+zb^<!)ysbhc-`v|MyMTIEAMFZ^vJ22~ds?A;c4MPn?Q3c?$C|f`RnVHs!Xhl8b{xcj
+z?+L(~GhNe}Gy62ztgb@r)v&7<`T+E5`li8(-Y3ngsijrtRP9#B5tMvhe!|w#^jC@*
+zQ=Rw5HI_-DilC-zaxTP$qd6hWWd$x0<9SKUWn<xJDkVht7@tnZ*}fL78C7qlhrPs!
+zBZ3$S^QjS$=d)aj=VDSUCZ=OjMhpqDhCP<rWjkg#u41UL-fJE8n&+cXEJUS1C?pin
+zPgo5o;Ta)Nm<dNX7>0aIn`u~M>0Q<tXzL45%h_hBx>zj5cAz(L6aL1`ZLY35(dyKf
+z_3l1J`Lq}vN#!CLG+;zBmWpK3LP(56GEz1zqM>%Bw)%t2<F#t-|J<Xl)RuDt12)v|
+z2{NiXu4yk~6<&wD?PDi=roFULQPfvRtjP_nbXifojVb9Uh`I*^D{FPRmf<y26ZC++
+zvI)?Y-oK6V95j+>rxpX85a78<o|n0>91@2(6mX5MR#p8?9JAn-6&t2z(IQLMj)w8Z
+zPQj$p)uVvfGNl`uS$4KIT-($7+pBYmF$=XM+emB_bf&~v@75Ld_B&TAZNH(7+0i`#
+zyfrPSZK$A$F=?8`l?<mdrPZ&N8_Xy!Y$MIdB03hs4bn}MnzF+qZ)$pBvCE_5Zh0P<
+zveN^d;hN$qD{{fLn2)B)1=B7mZc;BPvyion**M!O#FWjmKu()Q(?;Eb$xxi_Rg7hM
+zr+~L_qlu(cmkb|gyUIHC)83|4oUiJm0*5{<@BP+O@#@ah-8W9ft2<L$nY#?#O$zna
+zI*PF@@2IN5*ohv`U@{_#Au-N&7I$Wh>lIj>&gkd_bG%JNiqvyDD|#mG?w5#F)Dvq9
+z1$&UHuA^EhdQ3x4h-~u_v3-d(cdnZpv_^E3jd45L2u_0-Q(QzuxPaoqX%J(Ii--sp
+zP+T|-VoY%n5#a)g3#UPhDJ~)+TtIQ*G>9?9MMQ)PC@!1^F{ZePh;RYLh0`F$6c-T@
+zE}*z@8pN35A|k>C6c<i|7*kwCM7V(B!f6m=ii?N{7f@U{4Ps1j5fR}6iVLSfj43W6
+zB3wXm;WUUb#YIGf3n(s}1~I0%h=_0j#f8%##uOJ35iX#(a2mvz;vyo#1r!%fgBVj>
+zL`1lN;=*YVV~UH22p3RXI1OS<aS;*W0*VW#L5y#R%h!785*p}D%QAYU^8EpeMXzHr
+z>gYrsfTf23IQRkpe=no!Zvf150Q|le0Qo2Yo6Ohue31iSm2WJQnyg&B{9|gvS!Qtf
+z$wQUpp~KHkJ-FtpGygnQ;^XHduN-;vfm2hVH2|zddcXj1D>w+iAON>m&;4}v-RsL^
+z6JR>}!>KC+;EzW>`}Ha~zHsU5;S=i~K5*gF!{A){%Pj-19eVYb<e6RPkKKLm9p4_=
+z_V1RdlXt%S&G#SqMutvYQwQJp;Jwd>PKQT^j$c!Sr!TJB^vSm2qP=0;nGIemV7S@z
+zg}1Md3VV|Kzl$liU-jM9UfJpwmQgJ%Uc7wZ+>2X3Ufn$e@bjPh0RYR(tHDP3{&Roj
+SFJDD}!B}=j=EIS_&;JLm4`1N`
+
+delta 1052
+zcmZ2iHkW6Dikf7JYeY$Kep*R+Vo@rCV@iHfs)A>3VtQ&&YGO)d;mK4R1_tJ|iB|rM
+z3KP5R^bK^A4a^J_%nbDmjZMtW&2<!v3=9qQ4UF^+jdTsot&EMV3=9;YK*?_6FDE$#
+zo1&C7E0@&b<f6=ilFa-(1rR?mDZjMDR!M1c4x`@WWsJ6yt(Y{W6)JKIe0{C_i!#$Q
+z^AdAh@{>z*Q}aqZU2K&m=QC@FC_xpVNStHVP=QH!<`tJD<|U_sbO6oL%gju%vNSMt
+zGBPzYo_vp4A_A<?%DE^tu_V7JBtJjLRte(gfQ<Z-{NjxK0tM$_Qw86|<jgz}U&&6v
+z2I44})S}F?)D*X({9J|NlAzQyt4t)zChuecIS(R{g68geC4HbV`e?xb6AE&112HSC
+zfcE63mLvi>_7w$*$=RtT3aNQ1wn{}x_IA4-cylu_F!_4AIEGZ*dNXIgH&dd-@xOvj
+z3u3$lELfc;U$`LB5iB6$*w-ZRMSsUutFCU{rq!F1FN(1?UZ}q!vdhAwS%AZ@>4vhc
+z_mjQl%j0H!|9L=s(f7*v-}jvVS+zZ;!f0koLTQU&0|N^KlK=yU1A_tsBMPTGKu7Ga
+z&9@y-9RAl$=lL78B1Z4`H^puLPPT5+-Z^EC*QH5Qd}G}|sqLI@qWZV=f5Jpl`+c^a
+zv7Z!I)~{@tve0g+sp;I{>v9|)Jba3jGriZTUbL)oDb0(nJ}U5l&-;^t=1aT%J@>mN
+zecK|Cpr%<lDW&$s+^hFIS#HGtEdQnaT0ArMu+xG3RdW9SzHIv(YWziGVOPWaIi6g4
+zujZ**p6pXmw7jJ9rQULF;i3iEN)DQqJ>S1RN&E7z&R}tU+Ja=swQqMv7<V<iZ(r?v
+zxWd0^jrw(6-?^8KulQWIacro3E&1~5otcaC-JkdIn1(xw3tUzYx6V^t%ld2kmUdb3
+z)pZWhTN_@QZOAn?n-(%{gPUvh*`(Wvzqwl&tm9<96>R^q<+{!B4Ii1l@h10s#~i<+
+zEt<kO?eN;?n+(2oDc2{M&97HEz_p1%_;CP3M+*ZZ2Lp=&gFpj=0|QgSVwMtBVdqb6
+zJ9*o8#$7U4Gr4@m?WfWQ%%Soqit%%V>-Jm!ve~jMf6dneC(b|Hv#;(bFcLW)80etK
+hB{*Wu=Ib-EF@#ULEPCpO<^%>H@O1TaS?83{1OObwhF$;w
+
+diff --git a/core/res/res/drawable-xxhdpi/ic_lock_screenshot.png b/core/res/res/drawable-xxhdpi/ic_lock_screenshot.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..0d859c39c17896a34f76297e5adc951c94c38759
+GIT binary patch
+literal 1024
+zcmV+b1poVqP)<h;3K|Lk000e1NJLTq003YB003YJ1^@s6;+S_h0000PbVXQnQ*UN;
+zcVTj606}DLVr3vnZDD6+Qe|Oed2z{QJOBU#qDe$SRCwC#oXwHiKoErom#+!{0>A;_
+z`zinw02=@VKmfqq_znTEcOU@vZY7`q<Ny=^?)J87RqTxTn?WPyeN`%4ED}~fsryaO
+z2&Di3000000000000000000000N{j<kN>IT@z|%A$ok24Iw=IWOn?==3>*mX)3<Z|
+zZYf~nD}t~_;;}3MF}~un5TL?0gy1>ufOGt%?LgZOA$L%OsRsP13p(Zf?Bw&26xqIP
+zr;f*o3nE;(pp4FO>BAjR7xW&zywH|NfSX|8+Z|v_fH#kW9@aoi22n{R#e_gg7vH4G
+zaX=aLn6@si>jwycpf_IwrVlP^g}9ik;%2gnYf_c87h@b?*E;Sg$L=n$mubc3vIs*T
+zoljc?U`so{rGrWP6f)@Bkr*t%+}AYeYb#<+K}>A4kL4JzVwEAl1$lm9yJO0Cgp5=d
+zNI~_%pPUZn3=WLbO0SYuc%S^-zFbFWU;gI|0(@mr7eEPmA|va_@EI2IowkkXSiXti
+zivXPS4~C#d60A$CWhBmLNc-*Sbtwf|Cj#5m5o*9kCvjaf*xTOd>sg4c97A^}EX8RB
+zFTk=U_$zf^TblP>nM4qK8nghZ&T2{*_1@s0iVztrY8tWtCT~7db|++_nxeZ8Re(ZQ
+zc*X6wXdlFK>@NjbEO2lFyc^zk=}Zz+DhyG8)L=Pdhu=Ab0H5TV_ngn5>C%w;Y-@)j
+zfT7X$h}Lo6&;|*19Pns#b~J+kffAwsg<;?qmH-VFL)~|DL%aie4cWo03HRlr0DVm{
+zEF6n)(6y(DA0Y~08gRMn&6s*mFChxht?A9Us0F6ZYpmR?#BPNPGWBNWmIp`wC;JV5
+zYjjquX#s{h3n&Al-xj}z=bLkb6B~pq05dbRDt2<!7WZEHruk-d-Lq{^E5LxR#8Hh1
+zlN)OS=lh9iNuzvc<I5I(Srsv+fTX&fjJ)?se@`S|pY!be`M0{Yq>_53KAgBO0+jQ%
+zle+ah>SL{EPp;gqCh(aq*PjHR1^nepU&N<{S!YEMAvnPKjqMK`D=nU`2IxevZVly_
+z8=r#jqX4A{Q~tdO8(m61hWz%#)WdW2`uPCP^IKVBxVd)Hq_UQD=<zwW;t82@t!McR
+zGTX~s^GGb`_p(68swK~@wLyTAuGr9#1YA7>n39A55CA}caJl)nB3%8jUP~#OTw4SH
+u00000000000000000000000gD1Q-A=g-}+?W7B^C0000<MNUMnLSTZ0D#>sF
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable/ic_audio_ring_notif.xml b/core/res/res/drawable/ic_audio_ring_notif.xml
+index 54c4074..153e430 100644
+--- a/core/res/res/drawable/ic_audio_ring_notif.xml
++++ b/core/res/res/drawable/ic_audio_ring_notif.xml
+@@ -21,6 +21,6 @@ Copyright (C) 2014 The Android Open Source Project
+         android:tint="?attr/colorControlNormal">
+ 
+     <path
+-        android:fillColor="@color/black"
++        android:fillColor="@color/global_menu_icon"
+         android:pathData="M11.5,22.0c1.1,0.0 2.0,-0.9 2.0,-2.0l-4.0,0.0C9.5,21.1 10.4,22.0 11.5,22.0zM18.0,16.0l0.0,-5.5c0.0,-3.1 -2.1,-5.6 -5.0,-6.3L13.0,3.5C13.0,2.7 12.3,2.0 11.5,2.0C10.7,2.0 10.0,2.7 10.0,3.5l0.0,0.7c-2.9,0.7 -5.0,3.2 -5.0,6.3L5.0,16.0l-2.0,2.0l0.0,1.0l17.0,0.0l0.0,-1.0L18.0,16.0z"/>
+ </vector>
+diff --git a/core/res/res/drawable/ic_audio_ring_notif_mute.xml b/core/res/res/drawable/ic_audio_ring_notif_mute.xml
+index b591520..5fe77ee 100644
+--- a/core/res/res/drawable/ic_audio_ring_notif_mute.xml
++++ b/core/res/res/drawable/ic_audio_ring_notif_mute.xml
+@@ -21,6 +21,6 @@ Copyright (C) 2014 The Android Open Source Project
+         android:tint="?attr/colorControlNormal">
+ 
+     <path
+-        android:fillColor="@color/black"
++        android:fillColor="@color/global_menu_icon"
+         android:pathData="M11.5,22.0c1.1,0.0 2.0,-0.9 2.0,-2.0l-4.0,0.0C9.5,21.1 10.4,22.0 11.5,22.0zM18.0,10.5c0.0,-3.1 -2.1,-5.6 -5.0,-6.3L13.0,3.5C13.0,2.7 12.3,2.0 11.5,2.0C10.7,2.0 10.0,2.7 10.0,3.5l0.0,0.7C9.5,4.3 9.0,4.5 8.6,4.7l9.4,9.4L18.0,10.5zM17.7,19.0l2.0,2.0l1.3,-1.3L4.3,3.0L3.0,4.3l2.9,2.9C5.3,8.2 5.0,9.3 5.0,10.5L5.0,16.0l-2.0,2.0l0.0,1.0L17.7,19.0z" />
+ </vector>
+diff --git a/core/res/res/drawable/ic_audio_ring_notif_vibrate.xml b/core/res/res/drawable/ic_audio_ring_notif_vibrate.xml
+index b3a2859..770edef 100644
+--- a/core/res/res/drawable/ic_audio_ring_notif_vibrate.xml
++++ b/core/res/res/drawable/ic_audio_ring_notif_vibrate.xml
+@@ -21,6 +21,6 @@ Copyright (C) 2014 The Android Open Source Project
+         android:tint="?attr/colorControlNormal">
+ 
+     <path
+-        android:fillColor="@color/black"
++        android:fillColor="@color/global_menu_icon"
+         android:pathData="M0.0,15.0l2.0,0.0L2.0,9.0L0.0,9.0L0.0,15.0zM3.0,17.0l2.0,0.0L5.0,7.0L3.0,7.0L3.0,17.0zM22.0,9.0l0.0,6.0l2.0,0.0L24.0,9.0L22.0,9.0zM19.0,17.0l2.0,0.0L21.0,7.0l-2.0,0.0L19.0,17.0zM16.5,3.0l-9.0,0.0C6.7,3.0 6.0,3.7 6.0,4.5l0.0,15.0C6.0,20.3 6.7,21.0 7.5,21.0l9.0,0.0c0.8,0.0 1.5,-0.7 1.5,-1.5l0.0,-15.0C18.0,3.7 17.3,3.0 16.5,3.0zM16.0,19.0L8.0,19.0L8.0,5.0l8.0,0.0L16.0,19.0z"/>
+ </vector>
+diff --git a/core/res/res/layout/global_actions_silent_mode.xml b/core/res/res/layout/global_actions_silent_mode.xml
+index a358623..446138e 100644
+--- a/core/res/res/layout/global_actions_silent_mode.xml
++++ b/core/res/res/layout/global_actions_silent_mode.xml
+@@ -30,6 +30,7 @@
+         android:focusable="true"
+         >
+         <ImageView
++            android:id="@+id/image1"
+             android:layout_width="48dp"
+             android:layout_height="match_parent"
+             android:layout_gravity="center"
+@@ -58,6 +59,7 @@
+         android:focusable="true"
+         >
+         <ImageView
++            android:id="@+id/image2"
+             android:layout_width="48dp"
+             android:layout_height="match_parent"
+             android:layout_gravity="center"
+@@ -87,6 +89,7 @@
+         android:focusable="true"
+         >
+         <ImageView
++            android:id="@+id/image3"
+             android:layout_width="48dp"
+             android:layout_height="match_parent"
+             android:layout_gravity="center"
+@@ -100,4 +103,4 @@
+             android:background="@drawable/silent_mode_indicator"
+             />
+     </LinearLayout>
+-</LinearLayout>
+\ No newline at end of file
++</LinearLayout>
+diff --git a/core/res/res/values/slim_colors.xml b/core/res/res/values/slim_colors.xml
+new file mode 100644
+index 0000000..73b2269
+--- /dev/null
++++ b/core/res/res/values/slim_colors.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++**
++** Copyright 2015, The SlimRoms Source Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License");
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++-->
++<resources>
++
++    <!-- Slim's global menu -->
++    <color name="global_menu_icon">#ff212121</color>
++    <color name="global_menu_icon_enabled">#ff009688</color>
++
++</resources>
+diff --git a/core/res/res/values/slim_symbols.xml b/core/res/res/values/slim_symbols.xml
+index 3695c2e..127b672 100644
+--- a/core/res/res/values/slim_symbols.xml
++++ b/core/res/res/values/slim_symbols.xml
+@@ -57,4 +57,17 @@
+   <java-symbol type="drawable" name="ic_shortcut_action_auto_rotate" />
+   <java-symbol type="drawable" name="ic_shortcut_action_volume_panel" />
+ 
++  <!-- Config Power Menu -->
++  <java-symbol type="drawable" name="ic_lock_power_off_alpha" />
++  <java-symbol type="drawable" name="ic_lock_reboot_alpha" />
++  <java-symbol type="drawable" name="ic_lock_screenshot" />
++  <java-symbol type="drawable" name="ic_lock_airplane_mode_off_am_alpha" />
++  <java-symbol type="drawable" name="ic_lock_lock_alpha" />
++  <java-symbol type="color" name="global_menu_icon" />
++  <java-symbol type="color" name="global_menu_icon_enabled" />
++  <!-- Used to color the tri state sound options -->
++  <java-symbol type="id" name="image1" />
++  <java-symbol type="id" name="image2" />
++  <java-symbol type="id" name="image3" />
++
+ </resources>
+diff --git a/policy/src/com/android/internal/policy/impl/GlobalActions.java b/policy/src/com/android/internal/policy/impl/GlobalActions.java
+new file mode 100644
+index 0000000..522b94c
+--- /dev/null
++++ b/policy/src/com/android/internal/policy/impl/GlobalActions.java
+@@ -0,0 +1,1236 @@
++/*
++ * Copyright (C) 2008 The Android Open Source Project
++ * Copyright (C) 2015 The SlimRoms Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.internal.policy.impl;
++
++import com.android.internal.app.AlertController;
++import com.android.internal.app.AlertController.AlertParams;
++import com.android.internal.telephony.TelephonyIntents;
++import com.android.internal.telephony.TelephonyProperties;
++import com.android.internal.R;
++import com.android.internal.util.slim.Action;
++import com.android.internal.util.slim.ActionConfig;
++import com.android.internal.util.slim.PolicyConstants;
++import com.android.internal.util.slim.PolicyHelper;
++import com.android.internal.util.slim.ImageHelper;
++import com.android.internal.widget.LockPatternUtils;
++
++import android.app.ActivityManager;
++import android.app.ActivityManagerNative;
++import android.app.AlertDialog;
++import android.app.Dialog;
++import android.content.ActivityNotFoundException;
++import android.content.BroadcastReceiver;
++import android.content.Context;
++import android.content.DialogInterface;
++import android.content.Intent;
++import android.content.IntentFilter;
++import android.content.pm.UserInfo;
++import android.database.ContentObserver;
++import android.graphics.drawable.Drawable;
++import android.media.AudioManager;
++import android.net.ConnectivityManager;
++import android.os.Build;
++import android.os.Bundle;
++import android.os.Handler;
++import android.os.Message;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.os.SystemClock;
++import android.os.SystemProperties;
++import android.os.UserHandle;
++import android.os.UserManager;
++import android.os.Vibrator;
++import android.provider.Settings;
++import android.service.dreams.DreamService;
++import android.service.dreams.IDreamManager;
++import android.telephony.PhoneStateListener;
++import android.telephony.ServiceState;
++import android.telephony.TelephonyManager;
++import android.text.TextUtils;
++import android.util.ArraySet;
++import android.util.Log;
++import android.util.TypedValue;
++import android.view.InputDevice;
++import android.view.KeyEvent;
++import android.view.LayoutInflater;
++import android.view.MotionEvent;
++import android.view.View;
++import android.view.ViewConfiguration;
++import android.view.ViewGroup;
++import android.view.WindowManager;
++import android.view.WindowManagerGlobal;
++import android.view.WindowManagerInternal;
++import android.view.WindowManagerPolicy.WindowManagerFuncs;
++import android.view.accessibility.AccessibilityEvent;
++import android.widget.AdapterView;
++import android.widget.BaseAdapter;
++import android.widget.ImageView;
++import android.widget.ImageView.ScaleType;
++import android.widget.ListView;
++import android.widget.TextView;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Helper to show the global actions dialog.  Each item is an {@link Action} that
++ * may show depending on whether the keyguard is showing, and whether the device
++ * is provisioned.
++ */
++class GlobalActions implements DialogInterface.OnDismissListener, DialogInterface.OnClickListener  {
++
++    private static final String TAG = "GlobalActions";
++
++    private static final boolean SHOW_SILENT_TOGGLE = true;
++
++    /* Valid settings for global actions keys.
++     * see config.xml config_globalActionList */
++    private static final String GLOBAL_ACTION_KEY_POWER = "power";
++    private static final String GLOBAL_ACTION_KEY_REBOOT = "reboot";
++    private static final String GLOBAL_ACTION_KEY_AIRPLANE = "airplane";
++    private static final String GLOBAL_ACTION_KEY_BUGREPORT = "bugreport";
++    private static final String GLOBAL_ACTION_KEY_SILENT = "silent";
++    private static final String GLOBAL_ACTION_KEY_USERS = "users";
++    private static final String GLOBAL_ACTION_KEY_SETTINGS = "settings";
++    private static final String GLOBAL_ACTION_KEY_LOCKDOWN = "lockdown";
++
++    private final Context mContext;
++    private final WindowManagerFuncs mWindowManagerFuncs;
++    private final AudioManager mAudioManager;
++    private final IDreamManager mDreamManager;
++
++    private ArrayList<Action> mItems;
++    private GlobalActionsDialog mDialog;
++
++    private Action mSilentModeAction;
++    private ToggleAction mAirplaneModeOn;
++
++    private MyAdapter mAdapter;
++
++    private boolean mKeyguardShowing = false;
++    private boolean mDeviceProvisioned = false;
++    private ToggleAction.State mAirplaneState = ToggleAction.State.Off;
++    private boolean mIsWaitingForEcmExit = false;
++    private boolean mHasTelephony;
++    private boolean mHasVibrator;
++    private final boolean mShowSilentToggle;
++
++    /**
++     * @param context everything needs a context :(
++     */
++    public GlobalActions(Context context, WindowManagerFuncs windowManagerFuncs) {
++        mContext = context;
++        mWindowManagerFuncs = windowManagerFuncs;
++        mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
++        mDreamManager = IDreamManager.Stub.asInterface(
++                ServiceManager.getService(DreamService.DREAM_SERVICE));
++
++        // receive broadcasts
++        IntentFilter filter = new IntentFilter();
++        filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
++        filter.addAction(Intent.ACTION_SCREEN_OFF);
++        filter.addAction(TelephonyIntents.ACTION_EMERGENCY_CALLBACK_MODE_CHANGED);
++        context.registerReceiver(mBroadcastReceiver, filter);
++
++        ConnectivityManager cm = (ConnectivityManager)
++                context.getSystemService(Context.CONNECTIVITY_SERVICE);
++        mHasTelephony = cm.isNetworkSupported(ConnectivityManager.TYPE_MOBILE);
++
++        // get notified of phone state changes
++        TelephonyManager telephonyManager =
++                (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
++        telephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_SERVICE_STATE);
++        mContext.getContentResolver().registerContentObserver(
++                Settings.Global.getUriFor(Settings.Global.AIRPLANE_MODE_ON), true,
++                mAirplaneModeObserver);
++        Vibrator vibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
++        mHasVibrator = vibrator != null && vibrator.hasVibrator();
++
++        mShowSilentToggle = SHOW_SILENT_TOGGLE && !mContext.getResources().getBoolean(
++                com.android.internal.R.bool.config_useFixedVolume);
++    }
++
++    /**
++     * Show the global actions dialog (creating if necessary)
++     * @param keyguardShowing True if keyguard is showing
++     */
++    public void showDialog(boolean keyguardShowing, boolean isDeviceProvisioned) {
++        mKeyguardShowing = keyguardShowing;
++        mDeviceProvisioned = isDeviceProvisioned;
++        if (mDialog != null) {
++            mDialog.dismiss();
++            mDialog = null;
++            mDialog = createDialog();
++            // Show delayed, so that the dismiss of the previous dialog completes
++            mHandler.sendEmptyMessage(MESSAGE_SHOW);
++        } else {
++            mDialog = createDialog();
++            handleShow();
++        }
++    }
++
++    private void awakenIfNecessary() {
++        if (mDreamManager != null) {
++            try {
++                if (mDreamManager.isDreaming()) {
++                    mDreamManager.awaken();
++                }
++            } catch (RemoteException e) {
++                // we tried
++            }
++        }
++    }
++
++    private void handleShow() {
++        awakenIfNecessary();
++        prepareDialog();
++
++        // If we only have 1 item and it's a simple press action, just do this action.
++        if (mAdapter.getCount() == 1
++                && mAdapter.getItem(0) instanceof SinglePressAction
++                && !(mAdapter.getItem(0) instanceof LongPressAction)) {
++            ((SinglePressAction) mAdapter.getItem(0)).onPress();
++        } else {
++            WindowManager.LayoutParams attrs = mDialog.getWindow().getAttributes();
++            attrs.setTitle("GlobalActions");
++            mDialog.getWindow().setAttributes(attrs);
++            mDialog.show();
++            mDialog.getWindow().getDecorView().setSystemUiVisibility(View.STATUS_BAR_DISABLE_EXPAND);
++        }
++    }
++
++    /**
++     * Create the global actions dialog.
++     * @return A new dialog.
++     */
++    private GlobalActionsDialog createDialog() {
++        // Simple toggle style if there's no vibrator, otherwise use a tri-state
++        if (!mHasVibrator) {
++            mSilentModeAction = new SilentModeToggleAction();
++        } else {
++            mSilentModeAction = new SilentModeTriStateAction(mContext, mAudioManager, mHandler);
++        }
++
++        mItems = new ArrayList<Action>();
++
++        ArrayList<ActionConfig> powerMenuConfig =
++                PolicyHelper.getPowerMenuConfigWithDescription(
++                mContext, "shortcut_action_power_menu_values",
++                "shortcut_action_power_menu_entries");
++
++        ArraySet<String> addedKeys = new ArraySet<String>();
++        for (final ActionConfig config : powerMenuConfig) {
++            String actionKey = config.getClickAction();
++            if (addedKeys.contains(actionKey)) {
++                // If we already have added this, don't add it again.
++                continue;
++            }
++
++            Drawable enabledIcon = PolicyHelper.getPowerMenuIconImage(
++                    mContext, actionKey, config.getIcon(), true);
++            Drawable disabledIcon = PolicyHelper.getPowerMenuIconImage(
++                    mContext, actionKey, config.getIcon(), false);
++            enabledIcon = ImageHelper.resize(mContext, enabledIcon, 36);
++            disabledIcon = ImageHelper.resize(mContext, disabledIcon, 36);
++
++            if (actionKey.equals(PolicyConstants.ACTION_POWER_OFF)) {
++                mItems.add(getPowerAction(disabledIcon));
++            } else if (actionKey.equals(PolicyConstants.ACTION_REBOOT)) {
++                mItems.add(new RebootAction(disabledIcon));
++            } else if (actionKey.equals(PolicyConstants.ACTION_AIRPLANE)) {
++                constructAirPlaneModeToggle(enabledIcon, disabledIcon);
++                mItems.add(mAirplaneModeOn);
++            } else if ((actionKey.equals(PolicyConstants.ACTION_SOUND)) && (mShowSilentToggle)) {
++                mItems.add(mSilentModeAction);
++            } else if (actionKey.equals(PolicyConstants.ACTION_USERS)) {
++                addUsersToMenu(mItems);
++            } else if (actionKey.equals(PolicyConstants.ACTION_LOCKDOWN)) {
++                mItems.add(getLockdownAction(disabledIcon));
++            } else if (actionKey != null) {
++                // must be a screenshot, custom app or action shorcut
++                mItems.add(
++                    new SinglePressAction(disabledIcon, config.getClickActionDescription()) {
++                        public void onPress() {
++                            com.android.internal.util.slim.Action.processAction(
++                                mContext, config.getClickAction(), false);
++                        }
++
++                        public boolean showDuringKeyguard() {
++                            return true;
++                        }
++                        public boolean showBeforeProvisioning() {
++                            return true;
++                        }
++                    });
++            }
++            // Add here so we don't add more than one.
++            addedKeys.add(actionKey);
++        }
++
++        mAdapter = new MyAdapter();
++
++        AlertParams params = new AlertParams(mContext);
++        params.mAdapter = mAdapter;
++        params.mOnClickListener = this;
++        params.mForceInverseBackground = true;
++
++        GlobalActionsDialog dialog = new GlobalActionsDialog(mContext, params);
++        dialog.setCanceledOnTouchOutside(false); // Handled by the custom class.
++
++        dialog.getListView().setItemsCanFocus(true);
++        dialog.getListView().setLongClickable(true);
++        dialog.getListView().setOnItemLongClickListener(
++                new AdapterView.OnItemLongClickListener() {
++                    @Override
++                    public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
++                            long id) {
++                        final Action action = mAdapter.getItem(position);
++                        if (action instanceof LongPressAction) {
++                            return ((LongPressAction) action).onLongPress();
++                        }
++                        return false;
++                    }
++        });
++        dialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
++
++        dialog.setOnDismissListener(this);
++
++        return dialog;
++    }
++
++    private void constructAirPlaneModeToggle(Drawable enabledIcon, Drawable disabledIcon) {
++        mAirplaneModeOn = new ToggleAction(
++                enabledIcon,
++                disabledIcon,
++                R.string.global_actions_toggle_airplane_mode,
++                R.string.global_actions_airplane_mode_on_status,
++                R.string.global_actions_airplane_mode_off_status) {
++
++            void onToggle(boolean on) {
++                if (mHasTelephony && Boolean.parseBoolean(
++                        SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE))) {
++                    mIsWaitingForEcmExit = true;
++                    // Launch ECM exit dialog
++                    Intent ecmDialogIntent =
++                            new Intent(TelephonyIntents.ACTION_SHOW_NOTICE_ECM_BLOCK_OTHERS, null);
++                    ecmDialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++                    mContext.startActivity(ecmDialogIntent);
++                } else {
++                    changeAirplaneModeSystemSetting(on);
++                }
++            }
++
++            @Override
++            protected void changeStateFromPress(boolean buttonOn) {
++                if (!mHasTelephony) return;
++
++                // In ECM mode airplane state cannot be changed
++                if (!(Boolean.parseBoolean(
++                        SystemProperties.get(TelephonyProperties.PROPERTY_INECM_MODE)))) {
++                    mState = buttonOn ? State.TurningOn : State.TurningOff;
++                    mAirplaneState = mState;
++                }
++            }
++
++            public boolean showDuringKeyguard() {
++                return true;
++            }
++
++            public boolean showBeforeProvisioning() {
++                return false;
++            }
++        };
++        onAirplaneModeChanged();
++    }
++
++    private final class RebootAction extends SinglePressAction implements LongPressAction {
++        private RebootAction(Drawable icon) {
++            super(icon, R.string.global_action_reboot);
++        }
++
++        @Override
++        public boolean onLongPress() {
++            mWindowManagerFuncs.rebootSafeMode(true);
++            return true;
++        }
++
++        @Override
++        public boolean showDuringKeyguard() {
++            return true;
++        }
++
++        @Override
++        public boolean showBeforeProvisioning() {
++            return true;
++        }
++
++        @Override
++        public void onPress() {
++            mWindowManagerFuncs.reboot();
++        }
++    }
++
++    private Action getPowerAction(Drawable icon) {
++        return new SinglePressAction(icon, R.string.global_action_power_off) {
++
++            @Override
++            public void onPress() {
++                final boolean quickbootEnabled = Settings.System.getInt(
++                        mContext.getContentResolver(), "enable_quickboot", 0) == 1;
++                // go to quickboot mode if enabled
++                if (quickbootEnabled) {
++                    startQuickBoot();
++                    return;
++                }
++                // shutdown by making sure radio and power are handled accordingly.
++                mWindowManagerFuncs.shutdown(false /* confirm */);
++            }
++
++            @Override
++            public boolean showDuringKeyguard() {
++                return true;
++            }
++
++            @Override
++            public boolean showBeforeProvisioning() {
++                return true;
++            }
++        };
++    }
++
++    private Action getLockdownAction(Drawable icon) {
++        return new SinglePressAction(icon, R.string.global_action_lockdown) {
++
++            @Override
++            public void onPress() {
++                new LockPatternUtils(mContext).requireCredentialEntry(UserHandle.USER_ALL);
++                try {
++                    WindowManagerGlobal.getWindowManagerService().lockNow(null);
++                } catch (RemoteException e) {
++                    Log.e(TAG, "Error while trying to lock device.", e);
++                }
++            }
++
++            @Override
++            public boolean showDuringKeyguard() {
++                return true;
++            }
++
++            @Override
++            public boolean showBeforeProvisioning() {
++                return false;
++            }
++        };
++    }
++
++    private UserInfo getCurrentUser() {
++        try {
++            return ActivityManagerNative.getDefault().getCurrentUser();
++        } catch (RemoteException re) {
++            return null;
++        }
++    }
++
++    private boolean isCurrentUserOwner() {
++        UserInfo currentUser = getCurrentUser();
++        return currentUser == null || currentUser.isPrimary();
++    }
++
++    private void addUsersToMenu(ArrayList<Action> items) {
++        UserManager um = (UserManager) mContext.getSystemService(Context.USER_SERVICE);
++        if (um.isUserSwitcherEnabled()) {
++            List<UserInfo> users = um.getUsers();
++            UserInfo currentUser = getCurrentUser();
++            for (final UserInfo user : users) {
++                if (user.supportsSwitchTo()) {
++                    boolean isCurrentUser = currentUser == null
++                            ? user.id == 0 : (currentUser.id == user.id);
++                    Drawable icon = user.iconPath != null ? Drawable.createFromPath(user.iconPath)
++                            : null;
++                    SinglePressAction switchToUser = new SinglePressAction(
++                            com.android.internal.R.drawable.ic_menu_cc, icon,
++                            (user.name != null ? user.name : "Primary")
++                            + (isCurrentUser ? " \u2714" : "")) {
++                        public void onPress() {
++                            try {
++                                ActivityManagerNative.getDefault().switchUser(user.id);
++                            } catch (RemoteException re) {
++                                Log.e(TAG, "Couldn't switch user " + re);
++                            }
++                        }
++
++                        public boolean showDuringKeyguard() {
++                            return true;
++                        }
++
++                        public boolean showBeforeProvisioning() {
++                            return false;
++                        }
++                    };
++                    items.add(switchToUser);
++                }
++            }
++        }
++    }
++
++    private void prepareDialog() {
++        refreshSilentMode();
++        if (mAirplaneModeOn != null) {
++            mAirplaneModeOn.updateState(mAirplaneState);
++        }
++        mAdapter.notifyDataSetChanged();
++        mDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG);
++        if (mShowSilentToggle) {
++            IntentFilter filter = new IntentFilter(AudioManager.RINGER_MODE_CHANGED_ACTION);
++            mContext.registerReceiver(mRingerModeReceiver, filter);
++        }
++    }
++
++    private void refreshSilentMode() {
++        if (!mHasVibrator) {
++            final boolean silentModeOn =
++                    mAudioManager.getRingerMode() != AudioManager.RINGER_MODE_NORMAL;
++            ((ToggleAction)mSilentModeAction).updateState(
++                    silentModeOn ? ToggleAction.State.On : ToggleAction.State.Off);
++        }
++    }
++
++    /** {@inheritDoc} */
++    public void onDismiss(DialogInterface dialog) {
++        if (mShowSilentToggle) {
++            try {
++                mContext.unregisterReceiver(mRingerModeReceiver);
++            } catch (IllegalArgumentException ie) {
++                // ignore this
++                Log.w(TAG, ie);
++            }
++        }
++    }
++
++    /** {@inheritDoc} */
++    public void onClick(DialogInterface dialog, int which) {
++        if (!(mAdapter.getItem(which) instanceof SilentModeTriStateAction)) {
++            dialog.dismiss();
++        }
++        mAdapter.getItem(which).onPress();
++    }
++
++    /**
++     * The adapter used for the list within the global actions dialog, taking
++     * into account whether the keyguard is showing via
++     * {@link GlobalActions#mKeyguardShowing} and whether the device is provisioned
++     * via {@link GlobalActions#mDeviceProvisioned}.
++     */
++    private class MyAdapter extends BaseAdapter {
++
++        public int getCount() {
++            int count = 0;
++
++            for (int i = 0; i < mItems.size(); i++) {
++                final Action action = mItems.get(i);
++
++                if (mKeyguardShowing && !action.showDuringKeyguard()) {
++                    continue;
++                }
++                if (!mDeviceProvisioned && !action.showBeforeProvisioning()) {
++                    continue;
++                }
++                count++;
++            }
++            return count;
++        }
++
++        @Override
++        public boolean isEnabled(int position) {
++            return getItem(position).isEnabled();
++        }
++
++        @Override
++        public boolean areAllItemsEnabled() {
++            return false;
++        }
++
++        public Action getItem(int position) {
++
++            int filteredPos = 0;
++            for (int i = 0; i < mItems.size(); i++) {
++                final Action action = mItems.get(i);
++                if (mKeyguardShowing && !action.showDuringKeyguard()) {
++                    continue;
++                }
++                if (!mDeviceProvisioned && !action.showBeforeProvisioning()) {
++                    continue;
++                }
++                if (filteredPos == position) {
++                    return action;
++                }
++                filteredPos++;
++            }
++
++            throw new IllegalArgumentException("position " + position
++                    + " out of range of showable actions"
++                    + ", filtered count=" + getCount()
++                    + ", keyguardshowing=" + mKeyguardShowing
++                    + ", provisioned=" + mDeviceProvisioned);
++        }
++
++
++        public long getItemId(int position) {
++            return position;
++        }
++
++        public View getView(int position, View convertView, ViewGroup parent) {
++            Action action = getItem(position);
++            return action.create(mContext, convertView, parent, LayoutInflater.from(mContext));
++        }
++    }
++
++    // note: the scheme below made more sense when we were planning on having
++    // 8 different things in the global actions dialog.  seems overkill with
++    // only 3 items now, but may as well keep this flexible approach so it will
++    // be easy should someone decide at the last minute to include something
++    // else, such as 'enable wifi', or 'enable bluetooth'
++
++    /**
++     * What each item in the global actions dialog must be able to support.
++     */
++    private interface Action {
++        /**
++         * @return Text that will be announced when dialog is created.  null
++         *     for none.
++         */
++        CharSequence getLabelForAccessibility(Context context);
++
++        View create(Context context, View convertView, ViewGroup parent, LayoutInflater inflater);
++
++        void onPress();
++
++        /**
++         * @return whether this action should appear in the dialog when the keygaurd
++         *    is showing.
++         */
++        boolean showDuringKeyguard();
++
++        /**
++         * @return whether this action should appear in the dialog before the
++         *   device is provisioned.
++         */
++        boolean showBeforeProvisioning();
++
++        boolean isEnabled();
++    }
++
++    /**
++     * An action that also supports long press.
++     */
++    private interface LongPressAction extends Action {
++        boolean onLongPress();
++    }
++
++    /**
++     * A single press action maintains no state, just responds to a press
++     * and takes an action.
++     */
++    private static abstract class SinglePressAction implements Action {
++        private final int mIconResId;
++        private final Drawable mIcon;
++        private final int mMessageResId;
++        private final CharSequence mMessage;
++
++        protected SinglePressAction(int iconResId, int messageResId) {
++            mIconResId = iconResId;
++            mMessageResId = messageResId;
++            mMessage = null;
++            mIcon = null;
++        }
++
++        protected SinglePressAction(Drawable icon, int messageResId) {
++            mIconResId = 0;
++            mMessageResId = messageResId;
++            mMessage = null;
++            mIcon = icon;
++        }
++
++        protected SinglePressAction(Drawable icon, CharSequence message) {
++            mIconResId = 0;
++            mMessageResId = 0;
++            mMessage = message;
++            mIcon = icon;
++        }
++
++        protected SinglePressAction(int iconResId, Drawable icon, CharSequence message) {
++            mIconResId = iconResId;
++            mMessageResId = 0;
++            mMessage = message;
++            mIcon = icon;
++        }
++
++        protected SinglePressAction(int iconResId, CharSequence message) {
++            mIconResId = iconResId;
++            mMessageResId = 0;
++            mMessage = message;
++            mIcon = null;
++        }
++
++        public boolean isEnabled() {
++            return true;
++        }
++
++        public String getStatus() {
++            return null;
++        }
++
++        abstract public void onPress();
++
++        public CharSequence getLabelForAccessibility(Context context) {
++            if (mMessage != null) {
++                return mMessage;
++            } else {
++                return context.getString(mMessageResId);
++            }
++        }
++
++        public View create(
++                Context context, View convertView, ViewGroup parent, LayoutInflater inflater) {
++            View v = inflater.inflate(R.layout.global_actions_item, parent, false);
++
++            ImageView icon = (ImageView) v.findViewById(R.id.icon);
++            TextView messageView = (TextView) v.findViewById(R.id.message);
++
++            TextView statusView = (TextView) v.findViewById(R.id.status);
++            final String status = getStatus();
++            if (!TextUtils.isEmpty(status)) {
++                statusView.setText(status);
++            } else {
++                statusView.setVisibility(View.GONE);
++            }
++            if (mIcon != null) {
++                icon.setImageDrawable(mIcon);
++                if (mIconResId != 0) {
++                    icon.setScaleType(ScaleType.CENTER_CROP);
++                }
++            } else if (mIconResId != 0) {
++                icon.setImageDrawable(context.getDrawable(mIconResId));
++            }
++            if (mMessage != null) {
++                messageView.setText(mMessage);
++            } else {
++                messageView.setText(mMessageResId);
++            }
++
++            return v;
++        }
++    }
++
++    /**
++     * A toggle action knows whether it is on or off, and displays an icon
++     * and status message accordingly.
++     */
++    private static abstract class ToggleAction implements Action {
++
++        enum State {
++            Off(false),
++            TurningOn(true),
++            TurningOff(true),
++            On(false);
++
++            private final boolean inTransition;
++
++            State(boolean intermediate) {
++                inTransition = intermediate;
++            }
++
++            public boolean inTransition() {
++                return inTransition;
++            }
++        }
++
++        protected State mState = State.Off;
++
++        // prefs
++        protected Drawable mEnabledIcon;
++        protected Drawable mDisabledIcon;
++        protected int mMessageResId;
++        protected int mEnabledStatusMessageResId;
++        protected int mDisabledStatusMessageResId;
++
++        /**
++         * @param enabledIcon The icon for when this action is on.
++         * @param disabledIcon The icon for when this action is off.
++         * @param essage The general information message, e.g 'Silent Mode'
++         * @param enabledStatusMessageResId The on status message, e.g 'sound disabled'
++         * @param disabledStatusMessageResId The off status message, e.g. 'sound enabled'
++         */
++        public ToggleAction(Drawable enabledIcon,
++                Drawable disabledIcon,
++                int message,
++                int enabledStatusMessageResId,
++                int disabledStatusMessageResId) {
++            mEnabledIcon = enabledIcon;
++            mDisabledIcon = disabledIcon;
++            mMessageResId = message;
++            mEnabledStatusMessageResId = enabledStatusMessageResId;
++            mDisabledStatusMessageResId = disabledStatusMessageResId;
++        }
++
++        /**
++         * Override to make changes to resource IDs just before creating the
++         * View.
++         */
++        void willCreate() {
++
++        }
++
++        @Override
++        public CharSequence getLabelForAccessibility(Context context) {
++            return context.getString(mMessageResId);
++        }
++
++        public View create(Context context, View convertView, ViewGroup parent,
++                LayoutInflater inflater) {
++            willCreate();
++
++            View v = inflater.inflate(R
++                            .layout.global_actions_item, parent, false);
++
++            ImageView icon = (ImageView) v.findViewById(R.id.icon);
++            TextView messageView = (TextView) v.findViewById(R.id.message);
++            TextView statusView = (TextView) v.findViewById(R.id.status);
++            final boolean enabled = isEnabled();
++
++            if (messageView != null) {
++                messageView.setText(mMessageResId);
++                messageView.setEnabled(enabled);
++            }
++
++            boolean on = ((mState == State.On) || (mState == State.TurningOn));
++            if (icon != null) {
++                icon.setImageDrawable(on ? mEnabledIcon : mDisabledIcon);
++                icon.setEnabled(enabled);
++            }
++
++            if (statusView != null) {
++                statusView.setText(on ? mEnabledStatusMessageResId : mDisabledStatusMessageResId);
++                statusView.setVisibility(View.VISIBLE);
++                statusView.setEnabled(enabled);
++            }
++            v.setEnabled(enabled);
++
++            return v;
++        }
++
++        public final void onPress() {
++            if (mState.inTransition()) {
++                Log.w(TAG, "shouldn't be able to toggle when in transition");
++                return;
++            }
++
++            final boolean nowOn = !(mState == State.On);
++            onToggle(nowOn);
++            changeStateFromPress(nowOn);
++        }
++
++        public boolean isEnabled() {
++            return !mState.inTransition();
++        }
++
++        /**
++         * Implementations may override this if their state can be in on of the intermediate
++         * states until some notification is received (e.g airplane mode is 'turning off' until
++         * we know the wireless connections are back online
++         * @param buttonOn Whether the button was turned on or off
++         */
++        protected void changeStateFromPress(boolean buttonOn) {
++            mState = buttonOn ? State.On : State.Off;
++        }
++
++        abstract void onToggle(boolean on);
++
++        public void updateState(State state) {
++            mState = state;
++        }
++    }
++
++    private class SilentModeToggleAction extends ToggleAction {
++        public SilentModeToggleAction() {
++            super(ImageHelper.getColoredDrawable(
++                    mContext.getResources().getDrawable(R.drawable.ic_audio_vol_mute),
++                    mContext.getResources().getColor(R.color.global_menu_icon)),
++                    ImageHelper.getColoredDrawable(
++                    mContext.getResources().getDrawable(R.drawable.ic_audio_vol),
++                    mContext.getResources().getColor(R.color.global_menu_icon)),
++                    R.string.global_action_toggle_silent_mode,
++                    R.string.global_action_silent_mode_on_status,
++                    R.string.global_action_silent_mode_off_status);
++        }
++
++        void onToggle(boolean on) {
++            if (on) {
++                mAudioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
++            } else {
++                mAudioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
++            }
++        }
++
++        public boolean showDuringKeyguard() {
++            return true;
++        }
++
++        public boolean showBeforeProvisioning() {
++            return false;
++        }
++    }
++
++    private static class SilentModeTriStateAction implements Action, View.OnClickListener {
++
++        private final int[] ITEM_IDS = { R.id.option1, R.id.option2, R.id.option3 };
++        private final int[] IMAGE_IDS = {R.id.image1, R.id.image2, R.id.image3 };
++
++        private final AudioManager mAudioManager;
++        private final Handler mHandler;
++        private final Context mContext;
++
++        SilentModeTriStateAction(Context context, AudioManager audioManager, Handler handler) {
++            mAudioManager = audioManager;
++            mHandler = handler;
++            mContext = context;
++        }
++
++        private int ringerModeToIndex(int ringerMode) {
++            // They just happen to coincide
++            return ringerMode;
++        }
++
++        private int indexToRingerMode(int index) {
++            // They just happen to coincide
++            return index;
++        }
++
++        @Override
++        public CharSequence getLabelForAccessibility(Context context) {
++            return null;
++        }
++
++        public View create(Context context, View convertView, ViewGroup parent,
++                LayoutInflater inflater) {
++            View v = inflater.inflate(R.layout.global_actions_silent_mode, parent, false);
++
++            int selectedIndex = ringerModeToIndex(mAudioManager.getRingerMode());
++            for (int i = 0; i < 3; i++) {
++                View itemView = v.findViewById(ITEM_IDS[i]);
++                itemView.setSelected(selectedIndex == i);
++                ImageView iv = (ImageView) itemView.findViewById(IMAGE_IDS[i]);
++                iv.setImageDrawable(ImageHelper.getColoredDrawable(iv.getDrawable(),
++                        mContext.getResources().getColor(R.color.global_menu_icon)));
++                // Set up click handler
++                itemView.setTag(i);
++                itemView.setOnClickListener(this);
++            }
++            return v;
++        }
++
++        public void onPress() {
++        }
++
++        public boolean showDuringKeyguard() {
++            return true;
++        }
++
++        public boolean showBeforeProvisioning() {
++            return false;
++        }
++
++        public boolean isEnabled() {
++            return true;
++        }
++
++        void willCreate() {
++        }
++
++        public void onClick(View v) {
++            if (!(v.getTag() instanceof Integer)) return;
++
++            int index = (Integer) v.getTag();
++            mAudioManager.setRingerMode(indexToRingerMode(index));
++            mHandler.sendEmptyMessageDelayed(MESSAGE_DISMISS, DIALOG_DISMISS_DELAY);
++        }
++    }
++
++    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
++        public void onReceive(Context context, Intent intent) {
++            String action = intent.getAction();
++            if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(action)
++                    || Intent.ACTION_SCREEN_OFF.equals(action)) {
++                String reason = intent.getStringExtra(PhoneWindowManager.SYSTEM_DIALOG_REASON_KEY);
++                if (!PhoneWindowManager.SYSTEM_DIALOG_REASON_GLOBAL_ACTIONS.equals(reason)) {
++                    mHandler.sendEmptyMessage(MESSAGE_DISMISS);
++                }
++            } else if (TelephonyIntents.ACTION_EMERGENCY_CALLBACK_MODE_CHANGED.equals(action)) {
++                // Airplane mode can be changed after ECM exits if airplane toggle button
++                // is pressed during ECM mode
++                if (!(intent.getBooleanExtra("PHONE_IN_ECM_STATE", false)) &&
++                        mIsWaitingForEcmExit) {
++                    mIsWaitingForEcmExit = false;
++                    changeAirplaneModeSystemSetting(true);
++                }
++            }
++        }
++    };
++
++    PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
++        @Override
++        public void onServiceStateChanged(ServiceState serviceState) {
++            if (!mHasTelephony) return;
++            final boolean inAirplaneMode = serviceState.getState() == ServiceState.STATE_POWER_OFF;
++            mAirplaneState = inAirplaneMode ? ToggleAction.State.On : ToggleAction.State.Off;
++            if (mAirplaneModeOn != null) {
++                mHandler.sendEmptyMessage(MESSAGE_REFRESH_AIRPLANEMODE);
++            }
++            mAdapter.notifyDataSetChanged();
++        }
++    };
++
++    private BroadcastReceiver mRingerModeReceiver = new BroadcastReceiver() {
++        @Override
++        public void onReceive(Context context, Intent intent) {
++            if (intent.getAction().equals(AudioManager.RINGER_MODE_CHANGED_ACTION)) {
++                mHandler.sendEmptyMessage(MESSAGE_REFRESH);
++            }
++        }
++    };
++
++    private ContentObserver mAirplaneModeObserver = new ContentObserver(new Handler()) {
++        @Override
++        public void onChange(boolean selfChange) {
++            onAirplaneModeChanged();
++        }
++    };
++
++    private static final int MESSAGE_DISMISS = 0;
++    private static final int MESSAGE_REFRESH = 1;
++    private static final int MESSAGE_SHOW = 2;
++    private static final int MESSAGE_REFRESH_AIRPLANEMODE = 3;
++    private static final int DIALOG_DISMISS_DELAY = 300; // ms
++
++    private Handler mHandler = new Handler() {
++        public void handleMessage(Message msg) {
++            switch (msg.what) {
++            case MESSAGE_DISMISS:
++                if (mDialog != null) {
++                    mDialog.dismiss();
++                    mDialog = null;
++                }
++                break;
++            case MESSAGE_REFRESH:
++                refreshSilentMode();
++                mAdapter.notifyDataSetChanged();
++                break;
++            case MESSAGE_SHOW:
++                handleShow();
++                break;
++            case MESSAGE_REFRESH_AIRPLANEMODE:
++                if (mAirplaneModeOn != null) {
++                    mAirplaneModeOn.updateState(mAirplaneState);
++                }
++	        mAdapter.notifyDataSetChanged();
++	        break;
++            }
++        }
++    };
++
++    private void onAirplaneModeChanged() {
++        // Let the service state callbacks handle the state.
++        if (mHasTelephony) return;
++
++        boolean airplaneModeOn = Settings.Global.getInt(
++                mContext.getContentResolver(),
++                Settings.Global.AIRPLANE_MODE_ON,
++                0) == 1;
++        mAirplaneState = airplaneModeOn ? ToggleAction.State.On : ToggleAction.State.Off;
++        if (mAirplaneModeOn != null) {
++            mAirplaneModeOn.updateState(mAirplaneState);
++        }
++    }
++
++    /**
++     * Change the airplane mode system setting
++     */
++    private void changeAirplaneModeSystemSetting(boolean on) {
++        Settings.Global.putInt(
++                mContext.getContentResolver(),
++                Settings.Global.AIRPLANE_MODE_ON,
++                on ? 1 : 0);
++        Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
++        intent.addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
++        intent.putExtra("state", on);
++        mContext.sendBroadcastAsUser(intent, UserHandle.ALL);
++        if (!mHasTelephony) {
++            mAirplaneState = on ? ToggleAction.State.On : ToggleAction.State.Off;
++        }
++    }
++
++    private void startQuickBoot() {
++
++        Intent intent = new Intent("org.codeaurora.action.QUICKBOOT");
++        intent.putExtra("mode", 0);
++        try {
++            mContext.startActivityAsUser(intent,UserHandle.CURRENT);
++        } catch (ActivityNotFoundException e) {
++        }
++    }
++
++    private static final class GlobalActionsDialog extends Dialog implements DialogInterface {
++        private final Context mContext;
++        private final int mWindowTouchSlop;
++        private final AlertController mAlert;
++        private final MyAdapter mAdapter;
++
++        private EnableAccessibilityController mEnableAccessibilityController;
++
++        private boolean mIntercepted;
++        private boolean mCancelOnUp;
++
++        public GlobalActionsDialog(Context context, AlertParams params) {
++            super(context, getDialogTheme(context));
++            mContext = context;
++            mAlert = new AlertController(mContext, this, getWindow());
++            mAdapter = (MyAdapter) params.mAdapter;
++            mWindowTouchSlop = ViewConfiguration.get(context).getScaledWindowTouchSlop();
++            params.apply(mAlert);
++        }
++
++        private static int getDialogTheme(Context context) {
++            TypedValue outValue = new TypedValue();
++            context.getTheme().resolveAttribute(com.android.internal.R.attr.alertDialogTheme,
++                    outValue, true);
++            return outValue.resourceId;
++        }
++
++        @Override
++        protected void onStart() {
++            // If global accessibility gesture can be performed, we will take care
++            // of dismissing the dialog on touch outside. This is because the dialog
++            // is dismissed on the first down while the global gesture is a long press
++            // with two fingers anywhere on the screen.
++            if (EnableAccessibilityController.canEnableAccessibilityViaGesture(mContext)) {
++                mEnableAccessibilityController = new EnableAccessibilityController(mContext,
++                        new Runnable() {
++                    @Override
++                    public void run() {
++                        dismiss();
++                    }
++                });
++                super.setCanceledOnTouchOutside(false);
++            } else {
++                mEnableAccessibilityController = null;
++                super.setCanceledOnTouchOutside(true);
++            }
++
++            super.onStart();
++        }
++
++        @Override
++        protected void onStop() {
++            if (mEnableAccessibilityController != null) {
++                mEnableAccessibilityController.onDestroy();
++            }
++            super.onStop();
++        }
++
++        @Override
++        public boolean dispatchTouchEvent(MotionEvent event) {
++            if (mEnableAccessibilityController != null) {
++                final int action = event.getActionMasked();
++                if (action == MotionEvent.ACTION_DOWN) {
++                    View decor = getWindow().getDecorView();
++                    final int eventX = (int) event.getX();
++                    final int eventY = (int) event.getY();
++                    if (eventX < -mWindowTouchSlop
++                            || eventY < -mWindowTouchSlop
++                            || eventX >= decor.getWidth() + mWindowTouchSlop
++                            || eventY >= decor.getHeight() + mWindowTouchSlop) {
++                        mCancelOnUp = true;
++                    }
++                }
++                try {
++                    if (!mIntercepted) {
++                        mIntercepted = mEnableAccessibilityController.onInterceptTouchEvent(event);
++                        if (mIntercepted) {
++                            final long now = SystemClock.uptimeMillis();
++                            event = MotionEvent.obtain(now, now,
++                                    MotionEvent.ACTION_CANCEL, 0.0f, 0.0f, 0);
++                            event.setSource(InputDevice.SOURCE_TOUCHSCREEN);
++                            mCancelOnUp = true;
++                        }
++                    } else {
++                        return mEnableAccessibilityController.onTouchEvent(event);
++                    }
++                } finally {
++                    if (action == MotionEvent.ACTION_UP) {
++                        if (mCancelOnUp) {
++                            cancel();
++                        }
++                        mCancelOnUp = false;
++                        mIntercepted = false;
++                    }
++                }
++            }
++            return super.dispatchTouchEvent(event);
++        }
++
++        public ListView getListView() {
++            return mAlert.getListView();
++        }
++
++        @Override
++        protected void onCreate(Bundle savedInstanceState) {
++            super.onCreate(savedInstanceState);
++            mAlert.installContent();
++        }
++
++        @Override
++        public boolean dispatchPopulateAccessibilityEvent(AccessibilityEvent event) {
++            if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
++                for (int i = 0; i < mAdapter.getCount(); ++i) {
++                    CharSequence label =
++                            mAdapter.getItem(i).getLabelForAccessibility(getContext());
++                    if (label != null) {
++                        event.getText().add(label);
++                    }
++                }
++            }
++            return super.dispatchPopulateAccessibilityEvent(event);
++        }
++
++        @Override
++        public boolean onKeyDown(int keyCode, KeyEvent event) {
++            if (mAlert.onKeyDown(keyCode, event)) {
++                return true;
++            }
++            return super.onKeyDown(keyCode, event);
++        }
++
++        @Override
++        public boolean onKeyUp(int keyCode, KeyEvent event) {
++            if (mAlert.onKeyUp(keyCode, event)) {
++                return true;
++            }
++            return super.onKeyUp(keyCode, event);
++        }
++    }
++}
+-- 
+1.9.1
+

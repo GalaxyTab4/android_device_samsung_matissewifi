@@ -1,0 +1,184 @@
+From 2776d917161e16a41d8a56fce689c8620364aa96 Mon Sep 17 00:00:00 2001
+From: Ricardo Cerqueira <cyanogenmod@cerqueira.org>
+Date: Wed, 23 Oct 2013 03:00:09 +0100
+Subject: [PATCH 5/5] Add support for QC's time_daemon
+
+Enabled by BOARD_USES_QC_TIME_SERVICES=true, it requires the device
+to provide its own time_daemon executable and libtime_genoff.so
+proprietaries. The library should be copied by the device's setup
+config to $OUT/obj/lib for linkage (and pushed to the final build,
+obviously)
+
+Change-Id: Ie6964dbe2692dc33fc04093a5b89b6922d8443c8
+---
+ include/private/time_genoff.h                      | 87 ++++++++++++++++++++++
+ services/core/jni/Android.mk                       |  7 ++
+ .../jni/com_android_server_AlarmManagerService.cpp | 29 ++++++++
+ 3 files changed, 123 insertions(+)
+ create mode 100644 include/private/time_genoff.h
+
+diff --git a/include/private/time_genoff.h b/include/private/time_genoff.h
+new file mode 100644
+index 0000000..4df5680
+--- /dev/null
++++ b/include/private/time_genoff.h
+@@ -0,0 +1,87 @@
++/*
++ * Copyright (c) 2010-2013, The Linux Foundation. All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *  * Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ *  * Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *  * Neither the name of The Linux Foundation nor the names of its contributors
++ *    may be used to endorse or promote products derived from this software
++ *    without specific prior written permission.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
++ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ * NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
++ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
++ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
++ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ */
++
++#ifndef __TIME_GENOFF_H__
++#define __TIME_GENOFF_H__
++
++/*
++ * Time genoff base -- To be used by the time setter
++ * Reserved bases to be supported later.
++ */
++typedef enum time_bases {
++	ATS_RTC = 0,
++	ATS_TOD,
++	ATS_USER,
++	ATS_SECURE,
++	ATS_RESERVED_1,
++	ATS_RESERVED_2,
++	ATS_RESERVED_3,
++	ATS_GPS,
++	ATS_1X,
++	ATS_RESERVED_4,
++	ATS_WCDMA,
++	ATS_SNTP,
++	ATS_UTC,
++	ATS_MFLO,
++	ATS_INVALID
++} time_bases_type;
++
++/* Time unit -- Unit in which time is set/get */
++typedef enum time_unit {
++	TIME_STAMP,		/* Not supported */
++	TIME_MSEC,
++	TIME_SECS,
++	TIME_JULIAN,
++	TIME_20MS_FRAME,	/* Not supported */
++	TIME_INVALID
++} time_unit_type;
++
++/* Operation to be done */
++typedef enum time_genoff_opr {
++	T_SET,
++	T_GET,
++	T_MAX
++} time_genoff_opr_type;
++
++/* Structure to be passed as argument to time_genoff_operation() */
++/*
++ * In set/get: ts_val should be assigned memory and then passed.
++ * if time_unit = TIME_MSEC, TIME_SECS then ts_val = (uint64_t *)
++ * if time_unit = TIME_JULIAN then ts_val = (struct tm *)
++ */
++typedef struct time_genoff_info {
++	time_bases_type base;		/* Genoff in consideration */
++	void *ts_val;			/* Time to be set/get */
++	time_unit_type unit;		/* Time unit */
++	time_genoff_opr_type operation; /* Time operation to be done */
++}time_genoff_info_type;
++
++/* API to be called for time get/set operation */
++int time_genoff_operation(time_genoff_info_type *pargs);
++
++#endif /* __TIME_GENOFF_H__ */
+diff --git a/services/core/jni/Android.mk b/services/core/jni/Android.mk
+index 9556b08..0f03039 100644
+--- a/services/core/jni/Android.mk
++++ b/services/core/jni/Android.mk
+@@ -65,3 +65,10 @@ LOCAL_SHARED_LIBRARIES += \
+     libGLESv2 \
+     libnetutils \
+ 
++ifeq ($(BOARD_USES_QC_TIME_SERVICES),true)
++LOCAL_CFLAGS += -DHAVE_QC_TIME_SERVICES=1
++LOCAL_SHARED_LIBRARIES += libtime_genoff
++$(shell mkdir -p $(OUT)/obj/SHARED_LIBRARIES/libtime_genoff_intermediates/)
++$(shell touch $(OUT)/obj/SHARED_LIBRARIES/libtime_genoff_intermediates/export_includes)
++endif
++
+diff --git a/services/core/jni/com_android_server_AlarmManagerService.cpp b/services/core/jni/com_android_server_AlarmManagerService.cpp
+index 7d34448..4025988 100644
+--- a/services/core/jni/com_android_server_AlarmManagerService.cpp
++++ b/services/core/jni/com_android_server_AlarmManagerService.cpp
+@@ -40,6 +40,12 @@
+ #include <linux/android_alarm.h>
+ #include <linux/rtc.h>
+ 
++#if HAVE_QC_TIME_SERVICES
++extern "C" {
++#include <private/time_genoff.h>
++}
++#endif
++
+ namespace android {
+ 
+ static const size_t N_ANDROID_TIMERFDS = ANDROID_ALARM_TYPE_COUNT + 1;
+@@ -122,6 +128,25 @@ int AlarmImplAlarmDriver::clear(int type, struct timespec *ts)
+     return ioctl(fds[0], ANDROID_ALARM_CLEAR(type), ts);
+ }
+ 
++#if HAVE_QC_TIME_SERVICES
++static int setTimeServicesTime(time_bases_type base, long int secs)
++{
++    int rc = 0;
++    time_genoff_info_type time_set;
++    uint64_t value = secs;
++    time_set.base = base;
++    time_set.unit = TIME_SECS;
++    time_set.operation = T_SET;
++    time_set.ts_val = &value;
++    rc = time_genoff_operation(&time_set);
++    if (rc) {
++        ALOGE("Error setting generic offset: %d. Still setting system time\n", rc);
++        rc = -1;
++    }
++    return rc;
++}
++#endif
++
+ int AlarmImplAlarmDriver::setTime(struct timeval *tv)
+ {
+     struct timespec ts;
+@@ -130,6 +155,10 @@ int AlarmImplAlarmDriver::setTime(struct timeval *tv)
+     ts.tv_sec = tv->tv_sec;
+     ts.tv_nsec = tv->tv_usec * 1000;
+     res = ioctl(fds[0], ANDROID_ALARM_SET_RTC, &ts);
++#if HAVE_QC_TIME_SERVICES
++    setTimeServicesTime(ATS_USER, (tv->tv_sec));
++#endif
++
+     if (res < 0)
+         ALOGV("ANDROID_ALARM_SET_RTC ioctl failed: %s\n", strerror(errno));
+     return res;
+-- 
+1.9.1
+

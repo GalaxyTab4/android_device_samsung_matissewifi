@@ -1,0 +1,283 @@
+From 22031f2229bb727e546c531666c048cf85f456e4 Mon Sep 17 00:00:00 2001
+From: Edward Savage-Jones <edward.savage-jones@sonymobile.com>
+Date: Thu, 22 Aug 2013 00:24:00 +0200
+Subject: [PATCH 3/5] Add developer option 'reboot' to Global Actions menu
+ (1/2)
+
+Adds a new developer option to enable a reboot option in the
+global actions menu
+
+Conflicts:
+	core/res/res/values/strings.xml
+	core/res/res/values/symbols.xml
+	services/core/java/com/android/server/policy/GlobalActions.java
+	services/core/java/com/android/server/power/ShutdownThread.java
+
+Change-Id: I0cdc80eb44b8d42f4d30007d6c03dfc2cd24e7d4
+
+Conflicts:
+	core/java/android/view/WindowManagerPolicy.java
+	core/res/res/drawable-hdpi/ic_lock_reboot_alpha.png
+	core/res/res/drawable-mdpi/ic_lock_reboot_alpha.png
+	core/res/res/drawable-xhdpi/ic_lock_reboot_alpha.png
+	core/res/res/drawable-xxhdpi/ic_lock_reboot_alpha.png
+	core/res/res/drawable/ic_lock_reboot.xml
+	core/res/res/values/config.xml
+	services/core/java/com/android/server/policy/GlobalActions.java
+	services/core/java/com/android/server/power/ShutdownThread.java
+	services/core/java/com/android/server/wm/WindowManagerService.java
+---
+ core/java/android/provider/Settings.java           |   8 +++++
+ core/java/android/view/WindowManagerPolicy.java    |   2 +-
+ .../res/res/drawable-ldpi/ic_lock_reboot_alpha.png | Bin 0 -> 537 bytes
+ core/res/res/drawable/ic_lock_reboot.xml           |   2 +-
+ core/res/res/values/strings.xml                    |  15 ++++++++
+ core/res/res/values/symbols.xml                    |   5 +++
+ .../com/android/server/policy/GlobalActions.java   |  40 +++++++++++----------
+ .../com/android/server/power/ShutdownThread.java   |  27 ++++++++------
+ .../android/server/wm/WindowManagerService.java    |   6 ++++
+ 9 files changed, 74 insertions(+), 31 deletions(-)
+ create mode 100644 core/res/res/drawable-ldpi/ic_lock_reboot_alpha.png
+
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index f235e51..85cb066 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -6260,6 +6260,13 @@ public final class Settings {
+         public static final String BUGREPORT_IN_POWER_MENU = "bugreport_in_power_menu";
+ 
+         /**
++         * When the user has enabled the option to have a "reboot" command
++         * in the power menu.
++         * @hide
++         */
++        public static final String REBOOT_IN_POWER_MENU = "reboot_in_power_menu";
++
++        /**
+          * Whether ADB is enabled.
+          */
+         public static final String ADB_ENABLED = "adb_enabled";
+@@ -7829,6 +7836,7 @@ public final class Settings {
+          */
+         public static final String[] SETTINGS_TO_BACKUP = {
+             BUGREPORT_IN_POWER_MENU,
++            REBOOT_IN_POWER_MENU,
+             STAY_ON_WHILE_PLUGGED_IN,
+             AUTO_TIME,
+             AUTO_TIME_ZONE,
+diff --git a/core/java/android/view/WindowManagerPolicy.java b/core/java/android/view/WindowManagerPolicy.java
+index 915ac16..07498ab 100644
+--- a/core/java/android/view/WindowManagerPolicy.java
++++ b/core/java/android/view/WindowManagerPolicy.java
+@@ -442,7 +442,7 @@ public interface WindowManagerPolicy {
+ 
+         public void shutdown(boolean confirm);
+         public void rebootSafeMode(boolean confirm);
+-        public void reboot();
++        public void reboot(boolean confirm);
+ 
+         /**
+          * Return the window manager lock needed to correctly call "Lw" methods.
+diff --git a/core/res/res/drawable-ldpi/ic_lock_reboot_alpha.png b/core/res/res/drawable-ldpi/ic_lock_reboot_alpha.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..fa5b9c9c4d400e0b980f00105a6bcf24d4e46169
+GIT binary patch
+literal 537
+zcmV+!0_OdRP)<h;3K|Lk000e1NJLTq000;O000;W1ONa4N`Cco00001b5ch_0Itp)
+z=>Px#0%A)?L;wJ)jUzGu000SaNLh0L01FZT01FZU(%pXi00007bV*G`2j2=83oa;{
+zB|Yi@00EszL_t(I%gxh0Xp>PC2H+<@R*^~x5w$q@(;^6kE~4n5OP9_Lc5xJSb&y;f
+ztT<fh<nG`gii?w57k|L1P?z9O4W$kRDHJgc5>5Mk4oRAP3C?<kdpYNx_n!CM^Irae
+zB@*znvu7=rbyGRSf~$BEc1Yy^4(OzhI$;TC{IC&zWv|S4X|&PtY<%UeZB0$v?)Vh1
+z$WSYGadE^2*UjNxCz{&lxaaY}gU5Ed)OrN>du9%w!)qg8kC*Crl)K+c>;cLO;Nfm$
+zZ+PLn4P1+ph5$Dm()8ZD{uaXrx3nB|V*n6KX0hs=Dz@b0Y{BKHzF;<%vK5L-sD)NY
+zsjQeWQ(1vi)KKa^Pcbu*R`-#^61Tf2t^RrCcW2hZ;kHxgTRYK~Gz(~0#zY(&)J_~T
+zfn|*hAT%vXja#U93bv<PXTiACVrUL%Ddtt3Ml>IOcVZ*v1$;CWk|FWMBdW?$U%gSo
+zq)U#;*)$ct4XHJe7ms@D<UkXvE{64FSQ>eWux?t#nl|62H5JqS=|dj~Vp+*38oq~3
+b|G)hK$B%vdlJ%S<00000NkvXXu0mjfK^^E{
+
+literal 0
+HcmV?d00001
+
+diff --git a/core/res/res/drawable/ic_lock_reboot.xml b/core/res/res/drawable/ic_lock_reboot.xml
+index 5dae007..8801c39 100644
+--- a/core/res/res/drawable/ic_lock_reboot.xml
++++ b/core/res/res/drawable/ic_lock_reboot.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<!-- Copyright (C) 2014 SlimRoms Project
++<!-- Copyright (C) 2015 The Android Open Source Project
+ 
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+diff --git a/core/res/res/values/strings.xml b/core/res/res/values/strings.xml
+index eb60ba9..d91b795 100644
+--- a/core/res/res/values/strings.xml
++++ b/core/res/res/values/strings.xml
+@@ -4127,4 +4127,19 @@
+     <string name="China_Mobile">China Mobile</string>
+     <string name="China_Unicom">China Unicom</string>
+     <string name="China_Telecom">China Telecom</string>
++
++    <!-- Title of dialog to confirm reboot. [CHAR LIMIT=50] -->
++    <string name="reboot_title" xliff:restype="x-GENERIC/POPUP/TITLE/NOICON/2ROW/V">Restart</string>
++
++    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the tablet, there will
++         be a confirmation dialog.  This is the message. -->
++    <string name="reboot_confirm" product="tablet" xliff:restype="x-GENERIC/POPUP/TEXT/V">Your tablet will restart.</string>
++
++    <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will
++         be a confirmation dialog.  This is the message. -->
++    <string name="reboot_confirm" product="default" xliff:restype="x-GENERIC/POPUP/TEXT/V">Your phone will restart.</string>
++
++    <!-- label for item that reboots the phone in phone options dialog -->
++    <string name="global_action_reboot" xliff:restype="x-GENERIC/POPUP/LIST/V">Restart</string>
++
+ </resources>
+diff --git a/core/res/res/values/symbols.xml b/core/res/res/values/symbols.xml
+index 9fb3511..3c8441c 100755
+--- a/core/res/res/values/symbols.xml
++++ b/core/res/res/values/symbols.xml
+@@ -2392,4 +2392,9 @@
+   <java-symbol type="array" name="origin_carrier_names" />
+   <java-symbol type="array" name="locale_carrier_names" />
+ 
++  <java-symbol type="drawable" name="ic_lock_reboot" />
++  <java-symbol type="string" name="reboot_confirm" />
++  <java-symbol type="string" name="reboot_title" />
++  <java-symbol type="string" name="global_action_reboot" />
++
+ </resources>
+diff --git a/services/core/java/com/android/server/policy/GlobalActions.java b/services/core/java/com/android/server/policy/GlobalActions.java
+index 2208ae3..73d8b43 100644
+--- a/services/core/java/com/android/server/policy/GlobalActions.java
++++ b/services/core/java/com/android/server/policy/GlobalActions.java
+@@ -102,6 +102,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+     private static final String GLOBAL_ACTION_KEY_LOCKDOWN = "lockdown";
+     private static final String GLOBAL_ACTION_KEY_VOICEASSIST = "voiceassist";
+     private static final String GLOBAL_ACTION_KEY_ASSIST = "assist";
++    private static final String GLOBAL_ACTION_KEY_REBOOT = "reboot";
+ 
+     private final Context mContext;
+     private final WindowManagerFuncs mWindowManagerFuncs;
+@@ -275,7 +276,10 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+             if (GLOBAL_ACTION_KEY_POWER.equals(actionKey)) {
+                 mItems.add(new PowerAction());
+             } else if (GLOBAL_ACTION_KEY_REBOOT.equals(actionKey)) {
+-                mItems.add(new RebootAction());
++                if (Settings.Global.getInt(mContext.getContentResolver(),
++                        Settings.Global.REBOOT_IN_POWER_MENU, 0) != 0) {
++                    mItems.add(getRebootAction());
++                }
+             } else if (GLOBAL_ACTION_KEY_AIRPLANE.equals(actionKey)) {
+                 mItems.add(mAirplaneModeOn);
+             } else if (GLOBAL_ACTION_KEY_BUGREPORT.equals(actionKey)) {
+@@ -370,26 +374,26 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
+         }
+     }
+ 
+-    private final class RebootAction extends SinglePressAction {
+-        private RebootAction() {
+-            super(com.android.internal.R.drawable.ic_lock_power_reboot,
+-                    R.string.global_action_reboot);
+-        }
++    private Action getRebootAction() {
++        return new SinglePressAction(com.android.internal.R.drawable.ic_lock_reboot,
++                R.string.global_action_reboot) {
+ 
+-        @Override
+-        public boolean showDuringKeyguard() {
+-            return true;
+-        }
++            @Override
++            public void onPress() {
++                mWindowManagerFuncs.reboot(false /* confirm */);
++            }
+ 
+-        @Override
+-        public boolean showBeforeProvisioning() {
+-            return true;
+-        }
++            @Override
++            public boolean showDuringKeyguard() {
++                return true;
++            }
++
++            @Override
++            public boolean showBeforeProvisioning() {
++                return true;
++            }
++        };
+ 
+-        @Override
+-        public void onPress() {
+-            mWindowManagerFuncs.reboot();
+-        }
+     }
+ 
+     private Action getBugReportAction() {
+diff --git a/services/core/java/com/android/server/power/ShutdownThread.java b/services/core/java/com/android/server/power/ShutdownThread.java
+index 4e89e17..6beaff1 100644
+--- a/services/core/java/com/android/server/power/ShutdownThread.java
++++ b/services/core/java/com/android/server/power/ShutdownThread.java
+@@ -160,13 +160,22 @@ public final class ShutdownThread extends Thread {
+         }
+         final int longPressBehavior = context.getResources().getInteger(
+                         com.android.internal.R.integer.config_longPressOnPowerBehavior);
+-        int resourceId = mRebootSafeMode
+-                ? com.android.internal.R.string.reboot_safemode_confirm
+-                : (longPressBehavior == 2
+-                        ? com.android.internal.R.string.shutdown_confirm_question
+-                        : com.android.internal.R.string.shutdown_confirm);
+-        if (showRebootOption && !mRebootSafeMode) {
++        final int resourceId;
++        final int resourceTitleId;
++
++        if (mRebootSafeMode) {
++            resourceTitleId = com.android.internal.R.string.reboot_safemode_title;
++            resourceId = com.android.internal.R.string.reboot_safemode_confirm;
++        } else if (mReboot) {
++            resourceTitleId = com.android.internal.R.string.reboot_title;
+             resourceId = com.android.internal.R.string.reboot_confirm;
++        } else {
++            resourceTitleId = com.android.internal.R.string.power_off;
++            if (longPressBehavior == 2) {
++                resourceId = com.android.internal.R.string.shutdown_confirm_question;
++            } else {
++                resourceId = com.android.internal.R.string.shutdown_confirm;
++            }
+         }
+ 
+         final int titleResourceId = mRebootSafeMode
+@@ -197,11 +206,7 @@ public final class ShutdownThread extends Thread {
+                 if ((advancedReboot == 1 && !locked) || advancedReboot == 2) {
+                     // Include options in power menu for rebooting into recovery or bootloader
+                     sConfirmDialog = new AlertDialog.Builder(context)
+-                            .setTitle(titleResourceId)
+-                            .setItems(
+-                                    com.android.internal.R.array.shutdown_reboot_options,
+-                                    new DialogInterface.OnClickListener() {
+-                                public void onClick(DialogInterface dialog, int which) {
++                    .setTitle(resourceTitleId)
+                                     if (which < 0)
+                                         return;
+ 
+diff --git a/services/core/java/com/android/server/wm/WindowManagerService.java b/services/core/java/com/android/server/wm/WindowManagerService.java
+index 5c23f0b..78bc6c8 100644
+--- a/services/core/java/com/android/server/wm/WindowManagerService.java
++++ b/services/core/java/com/android/server/wm/WindowManagerService.java
+@@ -5691,6 +5691,12 @@ public class WindowManagerService extends IWindowManager.Stub
+         ShutdownThread.reboot(mContext, null, true);
+     }
+ 
++    // Called by window manager policy.  Not exposed externally.
++    @Override
++    public void reboot(boolean confirm) {
++        ShutdownThread.reboot(mContext, null, confirm);
++    }
++
+     public void setCurrentUser(final int newUserId, final int[] currentProfileIds) {
+         synchronized (mWindowMap) {
+             mCurrentUserId = newUserId;
+-- 
+1.9.1
+
