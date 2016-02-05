@@ -1,0 +1,95 @@
+[
+  {
+    "remote": "omnirom",
+    "repository": "android_hardware_qcom_display-caf-msm8974",
+    "target_path": "hardware/qcom/display-caf-msm8974",
+    "revision": "android-6.0"
+  },
+  {
+    "remote": "omnirom",
+    "repository": "android_hardware_qcom_media-caf-msm8974",
+    "target_path": "hardware/qcom/media-caf-msm8974",
+    "revision": "android-6.0"
+  },
+  {
+    "remote": "omnirom",
+    "repository": "android_hardware_qcom_audio-caf-msm8974",
+    "target_path": "hardware/qcom/audio-caf-msm8974",
+    "revision": "android-6.0"
+  },
+  {
+    "remote": "slimsaber",
+    "repository": "android_device_qcom_caf-sepolicy",
+    "target_path": "device/qcom/sepolicy",
+    "revision": "mm6.0"
+  },
+  {
+    "repository": "GalaxyTab4/android_device_samsung_msm8226-common",
+    "target_path": "device/samsung/msm8226-common",
+    "branch": "slim_mm6.0"
+  },
+  {
+    "repository": "GalaxyTab4/android_kernel_samsung_s3ve3g",
+    "target_path": "kernel/samsung/matissewifi",
+    "branch": "slim_mm6.0"
+  },
+  {
+    "repository": "GalaxyTab4/android_vendor_samsung_matissewifi",
+    "target_path": "vendor/samsung/matissewifi",
+    "branch": "slim_mm6.0"
+  },
+  {
+    "remote": "slimsaber",
+    "repository": "frameworks_av",
+    "target_path": "frameworks/av-caf",
+    "revision": "mm6.0-caf"
+  },
+  {
+    "remote": "slimsaber",
+    "repository": "frameworks_native",
+    "target_path": "frameworks/native-caf",
+    "revision": "mm6.0-caf"
+  },
+  {
+    "remote": "omnirom",
+    "repository": "android_external_stlport",
+    "target_path": "external/stlport",
+    "revision": "android-6.0"
+  },
+  {
+    "remote": "omnirom",
+    "repository": "android_hardware_sony_boringssl-compat",
+    "target_path": "hardware/sony/boringssl-compat",
+    "revision": "android-6.0"
+  },
+  {
+    "remote": "slimsaber",
+    "repository": "hardware_ril",
+    "target_path": "hardware/ril-caf",
+    "revision": "mm6.0-caf"
+  },
+  {
+    "remote": "omnirom",
+    "repository": "vendor_qcom_opensource_display-frameworks",
+    "target_path": "vendor/qcom/opensource/display-frameworks",
+    "revision": "android-6.0"
+  },
+  {
+    "remote": "github",
+    "repository": "Herna1994/android_packages_apps_SnapdragonCamera",
+    "target_path": "packages/apps/SnapdragonCamera",
+    "revision": "android-6.0-8974"
+  },
+  {
+    "remote": "slimsaber",
+    "repository": "uber_arm-androideabi-4.9-cortex-a15",
+    "target_path": "prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9-cortex-a15",
+    "revision": "master"
+  },
+  {
+    "remote": "slimsaber",
+    "repository": "uber_arm-eabi-4.9-cortex-a15",
+    "target_path": "prebuilts/gcc/linux-x86/arm/arm-eabi-4.9-cortex-a15",
+    "revision": "master"
+  }
+]

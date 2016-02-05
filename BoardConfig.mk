@@ -22,6 +22,12 @@ TARGET_OTA_ASSERT_DEVICE := matissewifi,matissewifiue,matissewifixx
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := MSM8226
 
+# Enable ART optimization
+ART_USE_OPTIMIZING_COMPILER := true
+
+# Use cortex-a15 optimized Uber toolchain
+TARGET_GCC_VERSION_EXP := 4.9-cortex-a15
+
 # Kernel
 BOARD_CUSTOM_BOOTIMG_MK := device/samsung/matissewifi/mkbootimg.mk
 BOARD_KERNEL_BASE := 0x00000000
@@ -66,7 +72,7 @@ BOARD_HARDWARE_CLASS += device/samsung/matissewifi/cmhw
 #BOARD_USES_LEGACY_MMAP := true
 
 # Lights
-TARGET_PROVIDES_LIBLIGHT := true
+#TARGET_PROVIDES_LIBLIGHT := true
 
 # Partitions
 BOARD_BOOTIMAGE_PARTITION_SIZE := 10485760
@@ -92,7 +98,48 @@ BOARD_HAS_NO_SELECT_BUTTON := true
 BOARD_RECOVERY_SWIPE := true
 BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
 BOARD_USES_MMCUTILS := true
-TARGET_RECOVERY_FSTAB := device/samsung/matissewifi/rootdir/etc/fstab.qcom
+TARGET_RECOVERY_FSTAB := device/samsung/matissewifi/rootdir/etc/recovery.fstab
+BOARD_NEEDS_LZMA_MINIGZIP := true
+
+# TWRP Build Flags
+TW_THEME := landscape_mdpi
+TW_HAS_DOWNLOAD_MODE := true
+#TW_INCLUDE_CRYPTO := true
+TW_NO_EXFAT_FUSE := true
+TW_NO_SCREEN_BLANK := true
+TW_HAS_MTP := true
+TW_USE_TOOLBOX := true
+
+##==================================
+## RECOVERY_VARIANT := multirom
+
+# MultiROM config
+#TARGET_RECOVERY_IS_MULTIROM := true
+BOARD_MKBOOTIMG_ARGS += --board mrom$(shell date -u +%Y%m%d)-01
+MR_DEVICE_VARIANTS := matissewifi
+MR_DEVICE_VARIANTS += matissewifiue
+MR_DEVICE_VARIANTS += matisse3g
+MR_INPUT_TYPE := type_b
+MR_INIT_DEVICES := device/samsung/matissewifi/multirom/mr_init_devices.c
+MR_DPI := mdpi
+MR_DPI_MUL := 1
+MR_DPI_FONT := 160
+MR_FSTAB := device/samsung/matissewifi/recovery.fstab
+MR_USE_MROM_FSTAB := false
+MR_KEXEC_MEM_MIN := 0x06200000
+MR_KEXEC_DTB := true
+#MR_INFOS := device/samsung/matissewifi/multirom/mrom_infos
+#MR_ENCRYPTION := true
+#MR_ENCRYPTION_SETUP_SCRIPT := device/samsung/matissewifi/multirom/mr_cp_crypto.sh
+#MR_PIXEL_FORMAT := "RGBX_8888"
+#MR_USE_QCOM_OVERLAY := true
+#MR_QCOM_OVERLAY_HEADER := device/samsung/matissewifi/multirom/mr_qcom_overlay.h
+#MR_QCOM_OVERLAY_CUSTOM_PIXEL_FORMAT := MDP_RGBX_8888
+#MR_CONTINUOUS_FB_UPDATE := true
+#MR_DEVICE_HOOKS := device/samsung/matissewifi/multirom/mr_hooks.c
+#MR_DEVICE_HOOKS_VER := 3
+#MR_ALLOW_NKK71_NOKEXEC_WORKAROUND := true
+
 
 # SELinux
 include device/qcom/sepolicy/sepolicy.mk
